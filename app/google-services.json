@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "241917046337",
+    "firebase_url": "https://kurs-fdd60.firebaseio.com",
+    "project_id": "kurs-fdd60",
+    "storage_bucket": "kurs-fdd60.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241917046337:android:74c25adb871f240c6ba0c0",
+        "android_client_info": {
+          "package_name": "com.example.kurs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "241917046337-igmetutkir07ef8m9mookij3jlfm2g9s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kurs",
+            "certificate_hash": "dd15e4083f9aa04b278c75af27b3b324319a7453"
+          }
+        },
+        {
+          "client_id": "241917046337-1i2dtsh862t2ulaac4o4gp64agp1j3hk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNBfurrguubTmvdx9MiXXXYxxVC6qrM_g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "241917046337-1i2dtsh862t2ulaac4o4gp64agp1j3hk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

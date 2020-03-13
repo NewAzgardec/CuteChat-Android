@@ -1,12 +1,16 @@
-package com.example.kurs
+package com.example.kurs.profile
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.afollestad.materialdialogs.MaterialDialog
+import com.example.kurs.R
+import com.example.kurs.common.Constants
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.account_activity.*
+import timber.log.Timber
 
 class Account: AppCompatActivity(), View.OnClickListener {
 
@@ -20,7 +24,7 @@ class Account: AppCompatActivity(), View.OnClickListener {
 
         reference.addValueEventListener(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                Timber.d(p0.message)
             }
 
             override fun onDataChange(p0: DataSnapshot) {
@@ -29,11 +33,30 @@ class Account: AppCompatActivity(), View.OnClickListener {
                     name.text = user2.username
                 }
             }
-
         })
+
+        logOut.setOnClickListener(this)
     }
 
     override fun onClick(p0: View?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        when(p0){
+            logOut->{
+                MaterialDialog(this).show {
+                    message(R.string.q_exit)
+                    positiveButton(R.string.yes){
+                        cancel()
+                        val prefs = this@Account.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
+                        val ed = prefs.edit()
+                        ed?.putBoolean(Constants.IS_LOGGED, false)
+                        ed?.apply()
+                        FirebaseAuth.getInstance().signOut()
+                        finish()
+                    }
+                    negativeButton (R.string.cancel){
+                        cancel()
+                    }
+                }
+            }
+        }
     }
 }

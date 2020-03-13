@@ -1,29 +1,24 @@
 package com.example.kurs.start
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import com.example.kurs.profile.Account
 import com.example.kurs.R
-import com.google.firebase.auth.FirebaseAuth
+import com.example.kurs.common.Constants
 import kotlinx.android.synthetic.main.activity_main.*
-import timber.log.Timber
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
-
-    private var authListener: FirebaseAuth.AuthStateListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        authListener = FirebaseAuth.AuthStateListener {auth ->
-            val user = auth.currentUser
-            if(user!=null){
-                Timber.d("log in: "+user.uid)
-            }else{
-                Timber.d("log out")
-            }
+        val prefs = this.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
+        if(prefs.getBoolean(Constants.IS_LOGGED, false)){
+            startActivity(Intent(this, Account::class.java))
         }
 
         btnEnter.setOnClickListener(this)

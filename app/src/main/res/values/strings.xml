@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">Kurs</string>
+    <string name="ready">готово</string>
+    <string name="verification">На вашу почту отправлено письмо для подтверждения</string>
+    <string name="q_exit">Вы уверены, что хотите выйти?</string>
+    <string name="yes">да</string>
+    <string name="cancel">отмена</string>
+    <string name="sended_msg">Отправлено письмо на почту для изменения пароля</string>
+    <string name="success">Success</string>
+    <string name="confirm_email">Подтвердите email</string>
+    <string name="error">ошибка</string>
+    <string name="empty">Заполнены не все поля!</string>
+    <string name="email">email</string>
+    <string name="password">password</string>
+    <string name="enter">enter</string>
+    <string name="forget_passwd">forget password</string>
+    <string name="logout">logOut</string>
+    <string name="registartion">registartion</string>
+    <string name="username">username</string>
 </resources>

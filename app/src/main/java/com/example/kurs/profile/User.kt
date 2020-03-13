@@ -1,4 +1,4 @@
-package com.example.kurs
+package com.example.kurs.profile
 
 data class User (
     val id:String = "",

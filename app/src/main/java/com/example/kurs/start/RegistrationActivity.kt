@@ -1,14 +1,17 @@
 package com.example.kurs.start
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.kurs.Account
+import com.example.kurs.profile.Account
 import com.example.kurs.R
+import com.example.kurs.common.Constants
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.valdesekamdem.library.mdtoast.MDToast
 import kotlinx.android.synthetic.main.activity_main.btnReg
 import kotlinx.android.synthetic.main.registration_activity.*
 
@@ -24,11 +27,17 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(p0: View?) {
         when (p0) {
-
             btnReg -> {
-                reg(etEmail.text.toString(), etPassword.text.toString(), userName.text.toString())
+                if(etEmail.text.trim().isNotEmpty()&&etPassword.text.trim().isNotEmpty()&&userName.text.trim().isNotEmpty()) {
+                    reg(
+                        etEmail.text.toString(),
+                        etPassword.text.toString(),
+                        userName.text.toString()
+                    )
+                }else{
+                    MDToast.makeText(this, resources.getString(R.string.empty), Toast.LENGTH_LONG, MDToast.TYPE_WARNING).show()
+                }
             }
-
         }
     }
 
@@ -36,29 +45,44 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
         firebaseAuth?.createUserWithEmailAndPassword(email, password)
             ?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-
                     val user = firebaseAuth!!.currentUser
                     if (user != null) {
-
-                        val reference =
-                            FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
-                        val hashMap = HashMap<String, String>()
-                        hashMap["id"] = user.uid
-                        hashMap["username"] = username
-                        hashMap["email"] = email
-                        hashMap["password"] = password
-                        reference.setValue(hashMap).addOnCompleteListener { task1 ->
-                            if (task1.isSuccessful) {
-                                finish()
-                                startActivity(Intent(this, Account::class.java))
+                        MDToast.makeText(this, resources.getString(R.string.verification), Toast.LENGTH_LONG, MDToast.TYPE_INFO).show()
+                        user.sendEmailVerification().addOnCompleteListener {task1->
+                            if(task1.isSuccessful){
+                                val reference =
+                                    FirebaseDatabase.getInstance().getReference(Constants.USERS)
+                                        .child(user.uid)
+                                val hashMap = HashMap<String, String>()
+                                hashMap[Constants.ID] = user.uid
+                                hashMap[Constants.USERNAME] = username
+                                hashMap[Constants.EMAIL] = email
+                                hashMap[Constants.PASSWORD] = password
+                                reference.setValue(hashMap).addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        val prefs = this.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
+                                        val ed = prefs.edit()
+                                        ed?.putBoolean(Constants.IS_LOGGED, true)
+                                        ed?.apply()
+                                        finishAffinity()
+                                        startActivity(
+                                            Intent(
+                                                this,
+                                                Account::class.java
+                                            )
+                                        )
+                                    }
+                                }
+                                MDToast.makeText(this,resources.getString(R.string.success), Toast.LENGTH_LONG, MDToast.TYPE_SUCCESS).show()
+                            }else{
+                                MDToast.makeText(this,task.exception?.localizedMessage, Toast.LENGTH_LONG, MDToast.TYPE_ERROR).show()
                             }
                         }
-                        Toast.makeText(this, "GOOD REGISTRATION", Toast.LENGTH_LONG).show()
+                    } else {
+                        MDToast.makeText(this,resources.getString(R.string.error), Toast.LENGTH_LONG, MDToast.TYPE_ERROR).show()
                     }
-
-
-                } else {
-                    Toast.makeText(this, "ERROR REGISTRATION", Toast.LENGTH_LONG).show()
+                }else{
+                    MDToast.makeText(this,task.exception?.localizedMessage, Toast.LENGTH_LONG, MDToast.TYPE_ERROR).show()
                 }
             }
     }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.example.kurs.R
 import com.example.kurs.common.Constants
@@ -13,7 +14,6 @@ import kotlinx.android.synthetic.main.account_activity.*
 import timber.log.Timber
 
 class Account: AppCompatActivity(), View.OnClickListener {
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +31,7 @@ class Account: AppCompatActivity(), View.OnClickListener {
                 val user2 = p0.getValue(User::class.java)
                 if (user2 != null) {
                     name.text = user2.username
+                    pbUsername.visibility = View.GONE
                 }
             }
         })

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.kurs.EnterActivity
 import com.example.kurs.profile.Account
 import com.example.kurs.R
 import com.example.kurs.common.Constants
@@ -72,7 +73,7 @@ class LoginActivity: AppCompatActivity(), View.OnClickListener {
                     ed?.apply()
                     MDToast.makeText(this, resources.getString(R.string.success), Toast.LENGTH_LONG, MDToast.TYPE_SUCCESS).show()
                     finishAffinity()
-                    startActivity(Intent(this, Account::class.java))
+                    startActivity(Intent(this, EnterActivity::class.java))
                 }else{
                     MDToast.makeText(this, resources.getString(R.string.confirm_email), Toast.LENGTH_LONG, MDToast.TYPE_INFO).show()
                 }

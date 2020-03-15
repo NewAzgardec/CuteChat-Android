@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/action_cut"
-        android:title="Cut"
+        android:id="@+id/action_profile"
+        android:title="Профиль"
+        android:icon="@drawable/ic_person"
         />
     <item
-        android:id="@+id/action_copy"
-        android:title="Copy"
+        android:id="@+id/action_messages"
+        android:title="Сообщения"
+        android:icon="@drawable/ic_chat"
         />
     <item
-        android:id="@+id/action_paste"
-        android:title="Paste"
+        android:id="@+id/action_wall"
+        android:title="Стена"
+        android:icon="@drawable/ic_wall"
         />
     <item
-        android:id="@+id/action_new"
-        android:title="New"
+        android:id="@+id/action_settings"
+        android:title="Настройки"
+        android:icon="@drawable/ic_settings"
         />
 </menu>

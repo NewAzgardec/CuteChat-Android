@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.kurs.profile.Account
+import com.example.kurs.profile.AccountFragment
 import com.example.kurs.R
 import com.example.kurs.common.Constants
 import com.google.firebase.auth.FirebaseAuth
@@ -68,7 +68,7 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
                                         startActivity(
                                             Intent(
                                                 this,
-                                                Account::class.java
+                                                AccountFragment::class.java
                                             )
                                         )
                                     }

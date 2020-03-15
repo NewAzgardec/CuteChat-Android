@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kurs.EnterActivity
-import com.example.kurs.profile.Account
 import com.example.kurs.R
 import com.example.kurs.common.Constants
 import com.google.firebase.auth.FirebaseAuth

@@ -8,7 +8,6 @@
     android:fitsSystemWindows="true"
     tools:openDrawer="end">
 
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -17,7 +16,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@color/green"
+            app:titleTextColor="@color/gray"
             android:theme="@style/AppTheme.AppBarOverlay"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
@@ -31,7 +31,7 @@
     <com.rom4ek.arcnavigationview.ArcNavigationView
         android:id="@+id/arcNavigationView"
         android:layoutDirection="rtl"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:background="@color/ohra"

@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import com.example.kurs.profile.Account
+import com.example.kurs.EnterActivity
 import com.example.kurs.R
 import com.example.kurs.common.Constants
 import kotlinx.android.synthetic.main.activity_main.*
@@ -18,7 +18,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         val prefs = this.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
         if(prefs.getBoolean(Constants.IS_LOGGED, false)){
-            startActivity(Intent(this, Account::class.java))
+            finish()
+            startActivity(Intent(this, EnterActivity::class.java))
         }
 
         btnEnter.setOnClickListener(this)

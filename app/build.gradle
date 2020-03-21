@@ -39,6 +39,13 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:3.3.0'
     implementation 'com.valdesekamdem.library:md-toast:0.9.0'
     implementation 'com.rom4ek:arcnavigationview:1.0.3'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    def version = '0.10.8'
+    implementation "org.jetbrains.anko:anko-commons:$version"
+    implementation "org.jetbrains.anko:anko-coroutines:$version"
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    implementation "android.arch.persistence.room:runtime:1.1.1"
+    annotationProcessor "android.arch.persistence.room:compiler:1.1.1"
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

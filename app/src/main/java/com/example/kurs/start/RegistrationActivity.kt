@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.kurs.profile.AccountFragment
+import com.example.kurs.EnterActivity
 import com.example.kurs.R
 import com.example.kurs.common.Constants
 import com.google.firebase.auth.FirebaseAuth
@@ -14,6 +14,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.valdesekamdem.library.mdtoast.MDToast
 import kotlinx.android.synthetic.main.activity_main.btnReg
 import kotlinx.android.synthetic.main.registration_activity.*
+import java.security.MessageDigest
 
 class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -41,6 +42,22 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    private fun sha256(base: String): String {
+        return try {
+            val digest: MessageDigest = MessageDigest.getInstance("SHA-256")
+            val hash: ByteArray = digest.digest(base.toByteArray(charset("UTF-8")))
+            val hexString = StringBuffer()
+            for (i in hash.indices) {
+                val hex = Integer.toHexString(0xff and hash[i].toInt())
+                if (hex.length == 1) hexString.append('0')
+                hexString.append(hex)
+            }
+            hexString.toString()
+        } catch (ex: Exception) {
+            throw RuntimeException(ex)
+        }
+    }
+
     private fun reg(email: String, password: String, username: String) {
         firebaseAuth?.createUserWithEmailAndPassword(email, password)
             ?.addOnCompleteListener { task ->
@@ -56,8 +73,10 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
                                 val hashMap = HashMap<String, String>()
                                 hashMap[Constants.ID] = user.uid
                                 hashMap[Constants.USERNAME] = username
+                                hashMap["lowerName"] = username.toLowerCase()
+                                hashMap["onlineStatus"] = "online"
                                 hashMap[Constants.EMAIL] = email
-                                hashMap[Constants.PASSWORD] = password
+                                hashMap[Constants.PASSWORD] = sha256(password)
                                 reference.setValue(hashMap).addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         val prefs = this.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
@@ -68,7 +87,7 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
                                         startActivity(
                                             Intent(
                                                 this,
-                                                AccountFragment::class.java
+                                                EnterActivity::class.java
                                             )
                                         )
                                     }

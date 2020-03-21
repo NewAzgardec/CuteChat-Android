@@ -9,10 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.kurs.EnterActivity
 import com.example.kurs.R
 import com.example.kurs.common.Constants
+import com.example.kurs.current.DBUser
 import com.google.firebase.auth.FirebaseAuth
 import com.valdesekamdem.library.mdtoast.MDToast
 import kotlinx.android.synthetic.main.activity_main.btnEnter
 import kotlinx.android.synthetic.main.login_activity.*
+import org.jetbrains.anko.doAsync
 
 class LoginActivity: AppCompatActivity(), View.OnClickListener {
 
@@ -66,6 +68,7 @@ class LoginActivity: AppCompatActivity(), View.OnClickListener {
             if (task.isSuccessful){
                 val user = FirebaseAuth.getInstance().currentUser
                 if(user!=null&&user.isEmailVerified){
+
                     val prefs = this.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
                     val ed = prefs.edit()
                     ed?.putBoolean(Constants.IS_LOGGED, true)

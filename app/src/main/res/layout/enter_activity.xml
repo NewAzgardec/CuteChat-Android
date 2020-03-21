@@ -5,6 +5,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorWhite"
     android:fitsSystemWindows="true"
     tools:openDrawer="end">
 
@@ -12,14 +13,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/green"
-            app:titleTextColor="@color/gray"
-            android:theme="@style/AppTheme.AppBarOverlay"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+<!--        <androidx.appcompat.widget.Toolbar-->
+<!--            android:id="@+id/toolbar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?attr/actionBarSize"-->
+<!--            android:background="@color/green"-->
+<!--            app:titleTextColor="@color/gray"-->
+<!--            android:theme="@style/AppTheme.AppBarOverlay"-->
+<!--            app:popupTheme="@style/AppTheme.PopupOverlay" />-->
 
         <FrameLayout
             android:id="@+id/frameLayout"

@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import com.example.kurs.messages.MessagesFragment
+import com.example.kurs.friends.FriendsFragment
+import com.example.kurs.messages.ChatsFragment
 import com.example.kurs.profile.AccountFragment
 import com.example.kurs.profile.User
 import com.example.kurs.settings.SettingsFragment
@@ -25,12 +24,12 @@ import kotlinx.android.synthetic.main.header_layout.*
 import timber.log.Timber
 
 class EnterActivity :AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.enter_activity)
-
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayout, AccountFragment()).addToBackStack(null).commit()
         val dr = findViewById<DrawerLayout>(R.id.drawer_layout)
-        val tb = findViewById<Toolbar>(R.id.toolbar)
         val user = FirebaseAuth.getInstance().currentUser!!
         val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
 
@@ -48,8 +47,7 @@ class EnterActivity :AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
 
 
-        setSupportActionBar(tb)
-        val toggle = ActionBarDrawerToggle(this, dr, tb,
+        val toggle = ActionBarDrawerToggle(this, dr, null,
             R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         dr.addDrawerListener(toggle)
         toggle.syncState()
@@ -59,12 +57,16 @@ class EnterActivity :AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(p0: MenuItem): Boolean {
         var fragment: Fragment? = null
+
         when(p0.itemId){
             R.id.action_profile->{
                 fragment = AccountFragment()
             }
+            R.id.action_friends->{
+                fragment = FriendsFragment()
+            }
             R.id.action_messages->{
-                fragment = MessagesFragment()
+                fragment = ChatsFragment()
             }
             R.id.action_wall->{
                 fragment = WallFragment()
@@ -74,9 +76,8 @@ class EnterActivity :AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
         if (fragment != null) {
-            supportFragmentManager.beginTransaction().replace(R.id.frameLayout, fragment).commit()
+            supportFragmentManager.beginTransaction().replace(R.id.frameLayout, fragment).addToBackStack(null).commit()
         }
-//        p0.isChecked = true
         findViewById<DrawerLayout>(R.id.drawer_layout).closeDrawer(GravityCompat.END)
         return true
     }
@@ -87,5 +88,29 @@ class EnterActivity :AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }else {
             super.onBackPressed()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        setStatus(false)
+    }
+
+    private fun setStatus(isOnline: Boolean) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if(user!=null) {
+            val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
+            val hashMap = HashMap<String, Any>()
+            if(isOnline) {
+                hashMap["onlineStatus"] = "online"
+            }else{
+                hashMap["onlineStatus"] = "offline"
+            }
+            reference.updateChildren(hashMap)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setStatus(true)
     }
 }

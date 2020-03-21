@@ -6,6 +6,11 @@
         android:icon="@drawable/ic_person"
         />
     <item
+        android:id="@+id/action_friends"
+        android:title="Друзья"
+        android:icon="@drawable/ic_friends"
+        />
+    <item
         android:id="@+id/action_messages"
         android:title="Сообщения"
         android:icon="@drawable/ic_chat"

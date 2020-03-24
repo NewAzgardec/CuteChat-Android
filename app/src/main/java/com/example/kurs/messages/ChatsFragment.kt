@@ -45,7 +45,7 @@ class ChatsFragment : Fragment(), View.OnClickListener {
         userId = FirebaseAuth.getInstance().currentUser!!.uid
         val reference = FirebaseDatabase.getInstance().getReference("Messages")
 
-        adapter = FriendsAdapter(context!!, chats) { us, pos ->
+        adapter = FriendsAdapter(context!!, chats, false) { us, pos ->
             val bundle = Bundle()
             bundle.putString("receiver", us.id)
             val fragment = MessageFragment()
@@ -63,11 +63,13 @@ class ChatsFragment : Fragment(), View.OnClickListener {
                 list.clear()
                 p0.children.forEach {
                     val chat = it.getValue(Message::class.java)
-                    if (chat != null && chat.senderId == userId) {
-                        list.add(chat.receiverId)
-                    }
-                    if (chat != null && chat.receiverId == userId) {
-                        list.add(chat.senderId)
+                    if(chat != null &&!list.contains(chat.senderId)&&!list.contains(chat.receiverId)) {
+                        if (chat.senderId == userId) {
+                            list.add(chat.receiverId)
+                        }
+                        if (chat.receiverId == userId) {
+                            list.add(chat.senderId)
+                        }
                     }
                 }
                 val ed = sPref?.edit()
@@ -79,7 +81,7 @@ class ChatsFragment : Fragment(), View.OnClickListener {
                 }
                 try {
                     getChats()
-                }catch(e:Exception){
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
@@ -91,20 +93,19 @@ class ChatsFragment : Fragment(), View.OnClickListener {
         val reference = FirebaseDatabase.getInstance().getReference("Users")
         reference.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
-               Timber.d(p0.message)
+                Timber.d(p0.message)
             }
 
             override fun onDataChange(p0: DataSnapshot) {
                 chats.clear()
                 p0.children.forEach {
                     val user = it.getValue(User::class.java)
-
-                    list.forEach { it1 ->
+                    for(i in 0 until list.size) {
                         if (user != null) {
-                            if (user.id == it1) {
+                            if (user.id == list[i]) {
                                 if (chats.size != 0) {
-                                    chats.forEach { it2 ->
-                                        if (user.id != it2.id) {
+                                    for(n in 0 until chats.size) {
+                                        if (user.id != chats[n].id) {
                                             chats.add(user)
                                         }
                                     }
@@ -117,7 +118,11 @@ class ChatsFragment : Fragment(), View.OnClickListener {
                     }
 
                 }
-                rvChats.adapter = adapter
+                try {
+                    rvChats.adapter = adapter
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
         })

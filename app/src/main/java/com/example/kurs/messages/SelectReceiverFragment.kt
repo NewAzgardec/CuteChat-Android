@@ -43,7 +43,7 @@ class SelectReceiverFragment : Fragment(), View.OnClickListener {
         val reference = FirebaseDatabase.getInstance().getReference("Users")
         val currentReference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
 
-        adapter = FriendsAdapter(context!!, list) { us, pos ->
+        adapter = FriendsAdapter(context!!, list, true) { us, pos ->
             val bundle = Bundle()
             bundle.putString("receiver", us.id)
             val fragment = MessageFragment()
@@ -94,8 +94,11 @@ class SelectReceiverFragment : Fragment(), View.OnClickListener {
                         list.add(user2)
                     }
                 }
-                rvReceivers.adapter = adapter
-
+                try {
+                    rvReceivers.adapter = adapter
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         })
     }

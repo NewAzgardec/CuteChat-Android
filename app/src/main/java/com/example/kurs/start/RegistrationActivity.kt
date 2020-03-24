@@ -74,7 +74,7 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
                                 hashMap[Constants.ID] = user.uid
                                 hashMap[Constants.USERNAME] = username
                                 hashMap["lowerName"] = username.toLowerCase()
-                                hashMap["onlineStatus"] = "online"
+                                hashMap["onlineStatus"] = "true"
                                 hashMap[Constants.EMAIL] = email
                                 hashMap[Constants.PASSWORD] = sha256(password)
                                 reference.setValue(hashMap).addOnCompleteListener { task ->

@@ -6,5 +6,6 @@ class Message (
     val senderName:String="",
     val receiverId:String="",
     val text:String="",
-    val date: String=""
+    val date: String="",
+    val seen:Boolean = false
 )

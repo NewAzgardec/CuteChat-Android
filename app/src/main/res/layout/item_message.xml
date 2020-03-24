@@ -30,4 +30,15 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvMessage"
         tools:text="date"/>
+
+    <TextView
+        android:id="@+id/tvSeen"
+        android:layout_width="0dp"
+        android:layout_margin="8dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvDate"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:text="seen"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,7 +1,5 @@
 package com.example.kurs.profile
 
-import com.google.firebase.database.PropertyName
-
 data class User (
     val id:String = "",
     val username: String = "",
@@ -9,5 +7,5 @@ data class User (
     val email:String= "",
     val password:String = "",
     val friends:HashMap<String, Any>? = null,
-    val onlineStatus:String = ""
+    var onlineStatus:String = ""
 )

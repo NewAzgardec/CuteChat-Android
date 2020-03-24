@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kurs.R
+import com.example.kurs.common.Constants
 import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -22,10 +23,11 @@ import kotlin.collections.HashMap
 
 class MessageFragment : Fragment(), View.OnClickListener {
     private var adapter: MessageAdapter? = null
-    var messages = ArrayList<Message>()
-    var receiver = ""
-    var userId = ""
-    var userName = ""
+    private var messages = ArrayList<Message>()
+    private val prefs = context!!.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
+    private var receiver = ""
+    private var userId = ""
+    private var userName = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,7 +78,32 @@ class MessageFragment : Fragment(), View.OnClickListener {
 
         })
 
+        getMessageStatus(userId)
+
         btnSend.setOnClickListener(this)
+    }
+
+    private fun getMessageStatus(userId: String) {
+        val reference = FirebaseDatabase.getInstance().getReference("Messages")
+        reference.addValueEventListener(object :ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+                Timber.d(p0.message)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+               p0.children.forEach {
+                   val chat = it.getValue(Message::class.java)
+                   if (chat != null) {
+                       if(chat.receiverId==userId&&chat.senderId==receiver){
+                           val hashMap = HashMap<String, Any>()
+                           hashMap["seen"] = true
+                           it.ref.updateChildren(hashMap)
+                       }
+
+                   }
+               }
+            }
+        })
     }
 
     private fun setupRecycler(context: Context) {
@@ -104,8 +131,11 @@ class MessageFragment : Fragment(), View.OnClickListener {
                         }
                     }
                 }
-
-                rvMessages.adapter = adapter
+                try {
+                    rvMessages.adapter = adapter
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
         })
@@ -116,10 +146,11 @@ class MessageFragment : Fragment(), View.OnClickListener {
         when (v) {
             btnSend -> {
                 val reference = FirebaseDatabase.getInstance().getReference("Messages")
-                val hashMap = HashMap<String, String>()
+                val hashMap = HashMap<String, Any>()
                 hashMap["senderId"] = userId
                 hashMap["senderName"] = userName
                 hashMap["receiverId"] = receiver
+                hashMap["seen"] = false
                 hashMap["text"] = etMessage.text.trim().toString()
                 hashMap["date"] = Date().toString()
 
@@ -129,4 +160,18 @@ class MessageFragment : Fragment(), View.OnClickListener {
             }
         }
     }
+//
+//    override fun onPause() {
+//        super.onPause()
+//        val ed = prefs.edit()
+//        ed?.putString(Constants.ID, "")
+//        ed?.apply()
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        val ed = prefs.edit()
+//        ed?.putString(Constants.ID, userId)
+//        ed?.apply()
+//    }
 }

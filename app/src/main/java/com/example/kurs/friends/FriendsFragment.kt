@@ -18,6 +18,9 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_friends.*
 import timber.log.Timber
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class FriendsFragment : Fragment(), View.OnClickListener {
 
@@ -41,7 +44,7 @@ class FriendsFragment : Fragment(), View.OnClickListener {
         val user = FirebaseAuth.getInstance().currentUser!!
 
 
-        adapter = FriendsAdapter(context!!, list) { us, pos ->
+        adapter = FriendsAdapter(context!!, list, true) { us, pos ->
 
         }
         searchFriend.addTextChangedListener(object : TextWatcher {
@@ -64,32 +67,32 @@ class FriendsFragment : Fragment(), View.OnClickListener {
 
         btnAddFriend.setOnClickListener(this)
         btnNewFriends.setOnClickListener(this)
-        cbOnline.setOnCheckedChangeListener{_, isChecked->
-                if(isChecked){
-                    val newList = ArrayList<User>()
-                    list.forEach {
-                        if (it.onlineStatus == "online") {
-                            newList.add(it)
-                        }
-                    }
-                    adapter = FriendsAdapter(context!!, newList) { us, pos ->
-
-                    }
-                    try {
-                        rvFriends.adapter = adapter
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }else{
-                    adapter = FriendsAdapter(context!!, list) { us, pos ->
-
-                    }
-                    try {
-                        rvFriends.adapter = adapter
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+        cbOnline.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                val newList = ArrayList<User>()
+                list.forEach {
+                    if (it.onlineStatus == "true") {
+                        newList.add(it)
                     }
                 }
+                adapter = FriendsAdapter(context!!, newList, true) { us, pos ->
+
+                }
+                try {
+                    rvFriends.adapter = adapter
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            } else {
+                adapter = FriendsAdapter(context!!, list, true) { us, pos ->
+
+                }
+                try {
+                    rvFriends.adapter = adapter
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
 
         }
     }
@@ -114,9 +117,9 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                     }
                 }
 
-                try{
-                rvFriends.adapter = adapter}
-                catch (e:Exception){
+                try {
+                    rvFriends.adapter = adapter
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
@@ -134,22 +137,26 @@ class FriendsFragment : Fragment(), View.OnClickListener {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                list.clear()
                 p0.children.forEach {
                     val value = it.value.toString().replace("{", "").replace("}", "").split("=")[1]
                     val ref = FirebaseDatabase.getInstance().getReference("Users")
                         .child(value)
+                    list.clear()
+
                     ref.addValueEventListener(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
                             Timber.d(p0.message)
                         }
 
                         override fun onDataChange(p0: DataSnapshot) {
-                            list.clear()
+                            //TODO friend list
                             val friend = p0.getValue(User::class.java)
+
                             if (friend != null) {
+                                !checkList(friend)
                                 list.add(friend)
                             }
+
                             try {
                                 rvFriends.adapter = adapter
                             } catch (e: Exception) {
@@ -160,6 +167,27 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                 }
             }
         })
+    }
+
+    private fun checkList(friend: User): Boolean {
+        val user = User(
+            friend.id,
+            friend.username,
+            friend.lowerName,
+            friend.email,
+            friend.password,
+            friend.friends,
+            ""
+        )
+        list.forEach {
+            val user2 =
+                User(it.id, it.username, it.lowerName, it.email, it.password, it.friends, "")
+            if (user2 == user) {
+                list.remove(it)
+                return true
+            }
+        }
+        return false
     }
 
     private fun checkNewFriends(user: FirebaseUser) {
@@ -263,36 +291,6 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                     rvNewFriends.adapter = newUsersAdapter
                 }
             }
-//            cbOnline -> {
-//                if(!cbOnline.isChecked){
-//                    val newList = ArrayList<User>()
-//                    list.forEach {
-//                        if (it.onlineStatus == "online") {
-//                            newList.add(it)
-//                        }
-//                    }
-//                    adapter = FriendsAdapter(context!!, newList) { us, pos ->
-//
-//                    }
-//                    try {
-//                        rvFriends.adapter = adapter
-//                    } catch (e: Exception) {
-//                        e.printStackTrace()
-//                    }
-//                    cbOnline.isChecked = true
-//                }else{
-//                    adapter = FriendsAdapter(context!!, list) { us, pos ->
-//
-//                    }
-//                    try {
-//                        rvFriends.adapter = adapter
-//                    } catch (e: Exception) {
-//                        e.printStackTrace()
-//                    }
-//                    cbOnline.isChecked = false
-//                }
-//
-//            }
         }
     }
 }

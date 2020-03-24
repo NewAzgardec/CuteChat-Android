@@ -45,7 +45,7 @@ class SearchFriendsFragment : Fragment() {
         val reference = FirebaseDatabase.getInstance().getReference("Users")
         val currentReference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
 
-        adapter = FriendsAdapter(context!!, list) { us, pos ->
+        adapter = FriendsAdapter(context!!, list, true) { us, pos ->
             val referenceCurrent = FirebaseDatabase.getInstance().getReference("Users").child(us.id)
             val ref = referenceCurrent.child("newFriends").push()
             val hashMap = HashMap<String, String>()
@@ -99,7 +99,7 @@ class SearchFriendsFragment : Fragment() {
                     searchList.clear()
                     searchFriends(s.toString())
                 } else {
-                    adapter = FriendsAdapter(context!!, list) { us, pos ->
+                    adapter = FriendsAdapter(context!!, list, true) { us, pos ->
                         val referenceCurrent =
                             FirebaseDatabase.getInstance().getReference("Users").child(us.id)
                         val ref = referenceCurrent.child("newFriends").push()
@@ -116,7 +116,11 @@ class SearchFriendsFragment : Fragment() {
                             }
                         }
                     }
-                    rvSearchedFriends.adapter = adapter
+                    try {
+                        rvSearchedFriends.adapter = adapter
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
 
@@ -127,7 +131,7 @@ class SearchFriendsFragment : Fragment() {
         list.forEach {
             if (it.lowerName.startsWith(s) && !searchList.contains(it)) {
                 searchList.add(it)
-                adapter = FriendsAdapter(context!!, searchList) { us, pos ->
+                adapter = FriendsAdapter(context!!, searchList, true) { us, pos ->
                     val referenceCurrent =
                         FirebaseDatabase.getInstance().getReference("Users").child(us.id)
                     val ref = referenceCurrent.child("newFriends").push()

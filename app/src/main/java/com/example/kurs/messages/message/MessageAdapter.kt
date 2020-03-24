@@ -19,6 +19,11 @@ class MessageAdapter(val list:ArrayList<Message>, val clickListener: (Message, I
         val item: Message = list[position]
         holder.bindItems(item)
         holder.itemView.setOnClickListener { clickListener(item, position) }
+        if(position ==list.size-1){
+            if(item.seen){
+                holder.itemView.tvSeen.visibility = View.VISIBLE
+            }
+        }
     }
 
     override fun getItemCount(): Int {

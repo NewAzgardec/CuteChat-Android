@@ -133,7 +133,6 @@ class ChatsFragment : Fragment(), View.OnClickListener {
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(false)
         }
-
     }
 
     override fun onClick(v: View?) {

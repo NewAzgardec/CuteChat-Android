@@ -8,16 +8,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.example.kurs.R
 import com.example.kurs.common.Constants
 import com.example.kurs.start.MainActivity
+import com.example.kurs.wall.Post
+import com.example.kurs.wall.PostFragment
+import com.example.kurs.wall.PostsAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_account.*
+import kotlinx.android.synthetic.main.item_post.*
+import kotlinx.android.synthetic.main.layout_account.*
 import timber.log.Timber
 
 class AccountFragment: Fragment(), View.OnClickListener {
+    private var adapter: PostsAdapter? = null
+    var posts = ArrayList<Post>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,9 +36,16 @@ class AccountFragment: Fragment(), View.OnClickListener {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        setupRecycler(requireContext())
         val user = FirebaseAuth.getInstance().currentUser!!
         val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
+        val referencePosts = FirebaseDatabase.getInstance().getReference("Wall")
+
+        adapter = PostsAdapter(user.uid, context!!, posts){post->
+            //TODO delete post
+//            removeFromPosts(referencePosts, post)
+        }
+
 
         reference.addValueEventListener(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError) {
@@ -50,7 +65,38 @@ class AccountFragment: Fragment(), View.OnClickListener {
             }
         })
 
+
+        referencePosts.addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+                Timber.d(p0.message)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                posts.clear()
+                p0.children.forEach {
+                    val post = it.getValue(Post::class.java)
+                    if (post != null&&post.sender==user.uid) {
+                        posts.add(post)
+                    }
+                }
+                try{
+                    adapter!!.notifyDataSetChanged()
+                    rvPosts.adapter = adapter
+                }catch (e:Exception){
+                    e.printStackTrace()
+                }
+            }
+        })
+
         logOut.setOnClickListener(this)
+        btnAddPost.setOnClickListener(this)
+    }
+
+    private fun setupRecycler(context: Context) {
+        with(rvPosts) {
+            layoutManager = LinearLayoutManager(context)
+            setHasFixedSize(false)
+        }
     }
 
     override fun onClick(p0: View?) {
@@ -65,6 +111,7 @@ class AccountFragment: Fragment(), View.OnClickListener {
                             val ed = prefs.edit()
                             ed?.putBoolean(Constants.IS_LOGGED, false)
                             ed?.apply()
+                            setStatus(false)
                             FirebaseAuth.getInstance().signOut()
                             activity!!.finish()
                             startActivity(Intent(activity, MainActivity::class.java))
@@ -75,6 +122,48 @@ class AccountFragment: Fragment(), View.OnClickListener {
                     }
                 }
             }
+
+            btnAddPost->{
+                fragmentManager!!.beginTransaction().add(R.id.frameLayout, PostFragment())
+                    .addToBackStack(null).commit()
+            }
+        }
+    }
+//
+//    private fun removeFromPosts(reference: DatabaseReference, post: Post) {
+//        reference.addValueEventListener(object : ValueEventListener {
+//            override fun onCancelled(p0: DatabaseError) {
+//                Timber.d(p0.message)
+//            }
+//
+//            override fun onDataChange(p0: DataSnapshot) {
+//                val user = FirebaseAuth.getInstance().currentUser
+//
+//                if (p0.children.count() > 0) {
+//                    p0.children.forEach {
+//                        val value = it.getValue(Post::class.java)
+//                        if (value != null&& user!=null) {
+//                            if (value.uri == post.uri&&value.sender==user.uid) {
+//                                reference.setValue(it.key, null)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        })
+//    }
+
+    private fun setStatus(isOnline: Boolean) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
+            val hashMap = HashMap<String, Any>()
+            if (isOnline) {
+                hashMap["onlineStatus"] = "true"
+            } else {
+                hashMap["onlineStatus"] = "false"
+            }
+            reference.updateChildren(hashMap)
         }
     }
 }

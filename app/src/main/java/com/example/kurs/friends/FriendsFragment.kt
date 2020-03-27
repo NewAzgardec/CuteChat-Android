@@ -149,7 +149,6 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                         }
 
                         override fun onDataChange(p0: DataSnapshot) {
-                            //TODO friend list
                             val friend = p0.getValue(User::class.java)
 
                             if (friend != null) {

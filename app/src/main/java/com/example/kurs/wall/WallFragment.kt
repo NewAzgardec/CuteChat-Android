@@ -49,16 +49,18 @@ class WallFragment : Fragment() {
                     if (p0.children.count() > 0) {
                         p0.children.forEach {
                             val value = it.getValue(Post::class.java)
-                            if(value!=null) {
+                            if (value != null) {
                                 if (value.id == post.id && post.isLiked) {
-                                    referencePosts.child(it.key.toString()).child("users").setValue(null)
-                                }else
-                                if (value.id == post.id && !post.isLiked) {
-                                    val hashMap = HashMap<String, String>()
-                                    hashMap["id"] = currentUser.uid
-                                    referencePosts.child(it.key.toString()).child("users").push()
-                                        .setValue(hashMap)
-                                }
+                                    referencePosts.child(it.key.toString()).child("users")
+                                        .setValue(null)
+                                } else
+                                    if (value.id == post.id && !post.isLiked) {
+                                        val hashMap = HashMap<String, String>()
+                                        hashMap["id"] = currentUser.uid
+                                        referencePosts.child(it.key.toString()).child("users")
+                                            .push()
+                                            .setValue(hashMap)
+                                    }
                                 adapter!!.notifyDataSetChanged()
                             }
                         }
@@ -101,8 +103,7 @@ class WallFragment : Fragment() {
                                                     post.sender
                                                 )
                                             ) {
-                                                //TODO add sender name
-//                                                post.sender = user.username
+                                                post.senderName = user.username
                                                 posts.add(post)
                                             }
                                         }
@@ -134,8 +135,8 @@ class WallFragment : Fragment() {
                 if (p0.children.count() > 0) {
                     p0.children.forEach {
                         val value = it.getValue(Post::class.java)
-                        if (value != null&&user!=null) {
-                            if (value.uri == post.uri&&value.sender==user.uid) {
+                        if (value != null && user != null) {
+                            if (value.uri == post.uri && value.sender == user.uid) {
                                 reference.child(it.key.toString()).setValue(null)
                             }
                         }

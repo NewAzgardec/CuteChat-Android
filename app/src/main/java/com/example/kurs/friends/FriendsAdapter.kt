@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.kurs.R
@@ -73,6 +72,8 @@ class FriendsAdapter(val context: Context, val list:ArrayList<User>,  val friend
                 itemView.ivIsOnline.visibility = View.VISIBLE
             }
             itemView.tvName.text = user.username
+
+           if(user.imageUri!=null&&user.imageUri.isNotEmpty())  Glide.with(context).load(user.imageUri).into(itemView.ivPhoto)
         }
     }
 }

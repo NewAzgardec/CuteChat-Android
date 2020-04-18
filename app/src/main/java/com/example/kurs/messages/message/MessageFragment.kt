@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kurs.R
-import com.example.kurs.common.Constants
 import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -24,7 +23,6 @@ import kotlin.collections.HashMap
 class MessageFragment : Fragment(), View.OnClickListener {
     private var adapter: MessageAdapter? = null
     private var messages = ArrayList<Message>()
-    private val prefs = context!!.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
     private var receiver = ""
     private var userId = ""
     private var userName = ""

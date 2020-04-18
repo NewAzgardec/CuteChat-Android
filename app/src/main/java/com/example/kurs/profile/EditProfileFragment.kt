@@ -7,6 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
+import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -20,8 +22,11 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.valdesekamdem.library.mdtoast.MDToast
 import kotlinx.android.synthetic.main.fragment_edit_account.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class EditProfileFragment : Fragment(), View.OnClickListener {
@@ -29,6 +34,9 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
     private var imageUri: Uri? = null
     private var uploadTask: UploadTask? = null
     var loadUri = ""
+    val phoneList = ArrayList<Phone>()
+    var phoneViews = ArrayList<View>()
+    var canAdd = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +50,7 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
         super.onViewCreated(view, savedInstanceState)
         val user = FirebaseAuth.getInstance().currentUser!!
         val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
+        val referencePhones = FirebaseDatabase.getInstance().getReference("Phones")
 
         reference.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -62,54 +71,147 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
                 }
             }
         })
+        referencePhones.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                Timber.d(p0.message)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                val curUser = FirebaseAuth.getInstance().currentUser
+                if (p0.children.count() > 0) {
+                    p0.children.forEach {
+                        val phone = it.getValue(Phone::class.java)
+                        if (!phoneList.contains(phone) && phone != null && curUser != null && phone.owner == curUser.uid) {
+                            phoneList.add(phone)
+                            addPhoneView(phone)
+                        }
+                    }
+                }
+            }
+        })
 
         ivUserAva.setOnClickListener(this)
         btnSave.setOnClickListener(this)
+        btnAddPhone.setOnClickListener(this)
+    }
+
+    private fun addPhoneView(phone: Phone?) {
+        if (phoneViews.size <= 4) {
+            try {
+                val view = LayoutInflater.from(context).inflate(R.layout.item_phone, null, false)
+                view.findViewById<Button>(R.id.btnDeletePhone).setOnClickListener {
+                    ltPhones.removeView(view)
+                    phoneViews.remove(view)
+                }
+                phoneViews.add(view)
+                if (phone != null) {
+                    view.findViewById<EditText>(R.id.etPhoneNumber).setText(phone.phone)
+                }
+                ltPhones.addView(view)
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun upload() {
-        val reference = FirebaseStorage.getInstance().getReference("Avatars")
-            .child(System.currentTimeMillis().toString() + "." + getExtension(imageUri!!))
+        if (imageUri != null) {
+            doAsync {
+                val reference = FirebaseStorage.getInstance().getReference("Avatars")
+                    .child(System.currentTimeMillis().toString() + "." + getExtension(imageUri!!))
 
-        uploadTask = reference.putFile(imageUri!!)
-        uploadTask!!.continueWithTask { p0 ->
-            if (!p0.isSuccessful) {
-                throw p0.exception!!
-            }
-            reference.downloadUrl
-        }.addOnCompleteListener { p0 ->
-            if (p0.isSuccessful) {
-                val dwUri = p0.result.toString()
-                loadUri = dwUri
-                val currentUser = FirebaseAuth.getInstance().currentUser
-                if (currentUser != null) {
-                    val ref =
-                        FirebaseDatabase.getInstance().getReference("Users").child(currentUser.uid)
-                    val hashMap = HashMap<String, Any>()
-                    hashMap["imageUri"] = loadUri
-                    hashMap["username"] = etName.text.toString()
-                    hashMap["lowerName"] = etName.text.toString().toLowerCase(Locale.getDefault())
-                    ref.updateChildren(hashMap)
+                uploadTask = reference.putFile(imageUri!!)
+                uploadTask!!.continueWithTask { p0 ->
+                    if (!p0.isSuccessful) {
+                        throw p0.exception!!
+                    }
+                    reference.downloadUrl
+                }.addOnCompleteListener { p0 ->
+                    if (p0.isSuccessful) {
+                        val dwUri = p0.result.toString()
+                        loadUri = dwUri
+                        canAdd = true
+                    } else {
+                        uiThread {
+                            MDToast.makeText(
+                                context,
+                                "Success",
+                                Toast.LENGTH_LONG,
+                                MDToast.TYPE_ERROR
+                            )
+                                .show()
+                        }
 
-                    //TODO show and edit phones
-//                    val ref2 = FirebaseDatabase.getInstance().getReference("Phones")
-
-                    fragmentManager!!.popBackStack()
+                    }
+                }.addOnFailureListener { p0 ->
+                    loadUri = ""
+                    uiThread {
+                        MDToast.makeText(
+                            context,
+                            p0.localizedMessage,
+                            Toast.LENGTH_LONG,
+                            MDToast.TYPE_ERROR
+                        ).show()
+                    }
                 }
-            } else {
-                MDToast.makeText(context, "Success", Toast.LENGTH_LONG, MDToast.TYPE_ERROR)
-                    .show()
-
             }
-        }.addOnFailureListener { p0 ->
-            MDToast.makeText(
-                context,
-                p0.localizedMessage,
-                Toast.LENGTH_LONG,
-                MDToast.TYPE_ERROR
-            ).show()
+        }
+
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            if (imageUri != null && canAdd || imageUri == null) {
+                val ref =
+                    FirebaseDatabase.getInstance().getReference("Users").child(currentUser.uid)
+                val hashMap = HashMap<String, Any>()
+                if(imageUri!=null){
+                    hashMap["imageUri"] = loadUri
+                }
+                hashMap["username"] = etName.text.toString()
+                hashMap["lowerName"] = etName.text.toString().toLowerCase(Locale.getDefault())
+                ref.updateChildren(hashMap)
+
+                val referencePhones = FirebaseDatabase.getInstance().getReference("Phones")
+
+                referencePhones.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                        Timber.d(p0.message)
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val currentList = ArrayList<Phone>()
+                        val curUser = FirebaseAuth.getInstance().currentUser
+
+                        if (p0.children.count() > 0) {
+                            p0.children.forEach {
+                                val phone = it.getValue(Phone::class.java)
+                                if (!currentList.contains(phone) && phone != null && curUser != null && phone.owner == curUser.uid) {
+                                    currentList.add(phone)
+                                }
+                            }
+
+                            p0.children.forEach {
+                                referencePhones.child(it.key.toString()).setValue(null)
+                            }
+                        }
+                    }
+                })
+
+
+                phoneViews.forEach {
+                    val hashMap2 = HashMap<String, Any>()
+                    val phone = it.findViewById<EditText>(R.id.etPhoneNumber)
+                    hashMap2["phone"] = phone.text.toString()
+                    hashMap2["owner"] = currentUser.uid
+                    referencePhones.push().setValue(hashMap2)
+                }
+
+
+                fragmentManager!!.popBackStack()
+            }
         }
     }
+
 
     private fun getExtension(uri: Uri): String {
         val resolver = context!!.contentResolver
@@ -141,6 +243,10 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
 
             btnSave -> {
                 upload()
+            }
+
+            btnAddPhone -> {
+                addPhoneView(null)
             }
         }
     }

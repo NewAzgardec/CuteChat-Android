@@ -45,7 +45,7 @@ class PostsAdapter(
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         fun bindItems(post: Post, currentId: String, context: Context) {
-            itemView.tvSender.text = post.sender
+            itemView.tvSender.text = post.senderName
             itemView.tvText.text = post.text
             if(post.users!=null){
                 itemView.tvCount.text = post.users.size.toString()
@@ -56,7 +56,7 @@ class PostsAdapter(
                 itemView.ivDelete.visibility = View.VISIBLE
             }
             if(post.isLiked){
-                itemView.ivLike.setImageResource(R.drawable.ic_wall)
+                itemView.ivLike.isChecked = true
             }
             Glide.with(context)
                 .load(post.uri)

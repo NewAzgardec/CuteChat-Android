@@ -57,13 +57,15 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
             }
 
             btnAddPhone -> {
-                val view = layoutInflater.inflate(R.layout.item_phone, null)
-                view.findViewById<Button>(R.id.btnDeletePhone).setOnClickListener {
-                    ltPhones.removeView(view)
-                    phoneViews.remove(view)
+                if(phoneViews.size<=4) {
+                    val view = layoutInflater.inflate(R.layout.item_phone, null)
+                    view.findViewById<Button>(R.id.btnDeletePhone).setOnClickListener {
+                        ltPhones.removeView(view)
+                        phoneViews.remove(view)
+                    }
+                    phoneViews.add(view)
+                    ltPhones.addView(view)
                 }
-                phoneViews.add(view)
-                ltPhones.addView(view)
             }
         }
     }

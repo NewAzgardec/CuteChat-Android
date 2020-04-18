@@ -12,7 +12,7 @@
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/etMessage"
-        tools:listitem="@layout/item_message"/>
+        tools:listitem="@layout/item_message_right"/>
 
     <EditText
         android:id="@+id/etMessage"

@@ -17,6 +17,7 @@ import com.example.kurs.wall.Post
 import com.example.kurs.wall.PostFragment
 import com.example.kurs.wall.PostsAdapter
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_account.*
 import kotlinx.android.synthetic.main.layout_account.*
@@ -25,6 +26,7 @@ import timber.log.Timber
 class AccountFragment : Fragment(), View.OnClickListener {
     private var adapter: PostsAdapter? = null
     var posts = ArrayList<Post>()
+    var userName = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,7 +44,6 @@ class AccountFragment : Fragment(), View.OnClickListener {
         val referencePosts = FirebaseDatabase.getInstance().getReference("Wall")
 
         adapter = PostsAdapter(user.uid, context!!, posts, { post ->
-            //TODO delete post
             removeFromPosts(referencePosts, post)
         }, { post ->
             referencePosts.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -87,10 +88,12 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 if (user2 != null) {
                     try {
                         name.text = user2.username
+                        userName = user2.username
                         if(user2.imageUri!=null){
                             Glide.with(context!!).load(user2.imageUri).into(ivAva)
                         }
                         pbUsername.visibility = View.GONE
+                        getPosts(referencePosts, user)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
@@ -98,7 +101,12 @@ class AccountFragment : Fragment(), View.OnClickListener {
             }
         })
 
+        logOut.setOnClickListener(this)
+        btnEditProfile.setOnClickListener(this)
+        btnAddPost.setOnClickListener(this)
+    }
 
+    private fun getPosts(referencePosts:DatabaseReference, user:FirebaseUser) {
         referencePosts.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
@@ -109,6 +117,9 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 p0.children.forEach {
                     val post = it.getValue(Post::class.java)
                     if (post != null && post.sender == user.uid) {
+                        if(userName!=""){
+                            post.senderName = userName
+                        }
                         posts.add(post)
                     }
                 }
@@ -120,10 +131,6 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 }
             }
         })
-
-        logOut.setOnClickListener(this)
-        btnEditProfile.setOnClickListener(this)
-        btnAddPost.setOnClickListener(this)
     }
 
     private fun setupRecycler(context: Context) {

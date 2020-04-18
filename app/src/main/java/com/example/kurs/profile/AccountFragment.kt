@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
+import com.bumptech.glide.Glide
 import com.example.kurs.R
 import com.example.kurs.common.Constants
 import com.example.kurs.start.MainActivity
@@ -19,11 +19,10 @@ import com.example.kurs.wall.PostsAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_account.*
-import kotlinx.android.synthetic.main.item_post.*
 import kotlinx.android.synthetic.main.layout_account.*
 import timber.log.Timber
 
-class AccountFragment: Fragment(), View.OnClickListener {
+class AccountFragment : Fragment(), View.OnClickListener {
     private var adapter: PostsAdapter? = null
     var posts = ArrayList<Post>()
 
@@ -34,6 +33,7 @@ class AccountFragment: Fragment(), View.OnClickListener {
     ): View? {
         return inflater.inflate(R.layout.fragment_account, container, false)
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecycler(requireContext())
@@ -41,13 +41,43 @@ class AccountFragment: Fragment(), View.OnClickListener {
         val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
         val referencePosts = FirebaseDatabase.getInstance().getReference("Wall")
 
-        adapter = PostsAdapter(user.uid, context!!, posts){post->
+        adapter = PostsAdapter(user.uid, context!!, posts, { post ->
             //TODO delete post
-//            removeFromPosts(referencePosts, post)
-        }
+            removeFromPosts(referencePosts, post)
+        }, { post ->
+            referencePosts.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                    Timber.d(p0.message)
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.children.count() > 0) {
+                        p0.children.forEach {
+                            val value = it.getValue(Post::class.java)
+                            if (value != null) {
+                                if (value.id == post.id && post.isLiked) {
+                                    referencePosts.child(it.key.toString()).child("users")
+                                        .setValue(null)
+                                    post.isLiked = false
+                                } else
+                                    if (value.id == post.id && !post.isLiked) {
+                                        val hashMap = HashMap<String, String>()
+                                        hashMap["id"] = user.uid
+                                        referencePosts.child(it.key.toString()).child("users")
+                                            .push()
+                                            .setValue(hashMap)
+                                        post.isLiked = true
+                                    }
+                                adapter!!.notifyDataSetChanged()
+                            }
+                        }
+                    }
+                }
+            })
+        })
 
 
-        reference.addValueEventListener(object : ValueEventListener{
+        reference.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
             }
@@ -57,8 +87,11 @@ class AccountFragment: Fragment(), View.OnClickListener {
                 if (user2 != null) {
                     try {
                         name.text = user2.username
+                        if(user2.imageUri!=null){
+                            Glide.with(context!!).load(user2.imageUri).into(ivAva)
+                        }
                         pbUsername.visibility = View.GONE
-                    }catch (e:Exception){
+                    } catch (e: Exception) {
                         e.printStackTrace()
                     }
                 }
@@ -66,7 +99,7 @@ class AccountFragment: Fragment(), View.OnClickListener {
         })
 
 
-        referencePosts.addValueEventListener(object : ValueEventListener{
+        referencePosts.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
             }
@@ -75,20 +108,21 @@ class AccountFragment: Fragment(), View.OnClickListener {
                 posts.clear()
                 p0.children.forEach {
                     val post = it.getValue(Post::class.java)
-                    if (post != null&&post.sender==user.uid) {
+                    if (post != null && post.sender == user.uid) {
                         posts.add(post)
                     }
                 }
-                try{
+                try {
                     adapter!!.notifyDataSetChanged()
                     rvPosts.adapter = adapter
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         })
 
         logOut.setOnClickListener(this)
+        btnEditProfile.setOnClickListener(this)
         btnAddPost.setOnClickListener(this)
     }
 
@@ -100,14 +134,15 @@ class AccountFragment: Fragment(), View.OnClickListener {
     }
 
     override fun onClick(p0: View?) {
-        when(p0){
-            logOut->{
+        when (p0) {
+            logOut -> {
                 context?.let {
                     MaterialDialog(it).show {
                         message(R.string.q_exit)
-                        positiveButton(R.string.yes){
+                        positiveButton(R.string.yes) {
                             cancel()
-                            val prefs = context.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
+                            val prefs =
+                                context.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
                             val ed = prefs.edit()
                             ed?.putBoolean(Constants.IS_LOGGED, false)
                             ed?.apply()
@@ -116,42 +151,46 @@ class AccountFragment: Fragment(), View.OnClickListener {
                             activity!!.finish()
                             startActivity(Intent(activity, MainActivity::class.java))
                         }
-                        negativeButton (R.string.cancel){
+                        negativeButton(R.string.cancel) {
                             cancel()
                         }
                     }
                 }
             }
 
-            btnAddPost->{
+            btnAddPost -> {
                 fragmentManager!!.beginTransaction().add(R.id.frameLayout, PostFragment())
+                    .addToBackStack(null).commit()
+            }
+
+            btnEditProfile ->{
+                fragmentManager!!.beginTransaction().add(R.id.frameLayout, EditProfileFragment())
                     .addToBackStack(null).commit()
             }
         }
     }
-//
-//    private fun removeFromPosts(reference: DatabaseReference, post: Post) {
-//        reference.addValueEventListener(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//                Timber.d(p0.message)
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//                val user = FirebaseAuth.getInstance().currentUser
-//
-//                if (p0.children.count() > 0) {
-//                    p0.children.forEach {
-//                        val value = it.getValue(Post::class.java)
-//                        if (value != null&& user!=null) {
-//                            if (value.uri == post.uri&&value.sender==user.uid) {
-//                                reference.setValue(it.key, null)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        })
-//    }
+
+    private fun removeFromPosts(reference: DatabaseReference, post: Post) {
+        reference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                Timber.d(p0.message)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                val user = FirebaseAuth.getInstance().currentUser
+                if (p0.children.count() > 0) {
+                    p0.children.forEach {
+                        val value = it.getValue(Post::class.java)
+                        if (value != null && user != null) {
+                            if (value.uri == post.uri && value.sender == user.uid) {
+                                reference.child(it.key.toString()).setValue(null)
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
 
     private fun setStatus(isOnline: Boolean) {
         val user = FirebaseAuth.getInstance().currentUser

@@ -1,14 +1,12 @@
 package com.example.kurs.friends
 
 import android.content.Context
-import android.icu.text.Edits
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kurs.R
@@ -18,9 +16,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_friends.*
 import timber.log.Timber
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class FriendsFragment : Fragment(), View.OnClickListener {
 
@@ -175,12 +170,13 @@ class FriendsFragment : Fragment(), View.OnClickListener {
             friend.lowerName,
             friend.email,
             friend.password,
+            friend.imageUri,
             friend.friends,
             ""
         )
         list.forEach {
             val user2 =
-                User(it.id, it.username, it.lowerName, it.email, it.password, it.friends, "")
+                User(it.id, it.username, it.lowerName, it.email, it.password, it.imageUri, it.friends, "")
             if (user2 == user) {
                 list.remove(it)
                 return true

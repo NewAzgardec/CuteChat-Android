@@ -1,6 +1,5 @@
 package com.example.kurs.wall
 
-import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,17 +11,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.kurs.R
-import com.google.android.gms.tasks.Continuation
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.valdesekamdem.library.mdtoast.MDToast
 import kotlinx.android.synthetic.main.fragment_add_post.*
-import java.lang.Exception
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -69,10 +63,8 @@ class PostFragment : Fragment(), View.OnClickListener {
                     val dwUri = p0.result.toString()
                     loadUri = dwUri
                     val ref = FirebaseDatabase.getInstance().getReference("Wall")
-//                        .child(FirebaseAuth.getInstance().currentUser!!.uid)
                     val ids = ArrayList<String>()
                     val comments = ArrayList<Comment>()
-                    ids.add(FirebaseAuth.getInstance().currentUser!!.uid)
                     val hashMap = HashMap<String, Any>()
                     hashMap["uri"] = loadUri
                     hashMap["text"] = postText.text.trim().toString()
@@ -130,7 +122,6 @@ class PostFragment : Fragment(), View.OnClickListener {
 
             postAdd->{
                 upload()
-
             }
         }
     }

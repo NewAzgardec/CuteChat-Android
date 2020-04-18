@@ -4,14 +4,18 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.kurs.R
-import kotlinx.android.synthetic.main.item_chat.view.*
 import kotlinx.android.synthetic.main.item_post.view.*
 
-class PostsAdapter(val currentId:String, val context: Context, val list:ArrayList<Post>,  val deleteListener: (Post) -> Unit) :
+class PostsAdapter(
+    val currentId: String,
+    val context: Context,
+    val list: ArrayList<Post>,
+    val deleteListener: (Post) -> Unit,
+    val likeListener: (Post) -> Unit
+) :
     RecyclerView.Adapter<PostsAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -21,8 +25,17 @@ class PostsAdapter(val currentId:String, val context: Context, val list:ArrayLis
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item: Post = list[position]
-        holder.bindItems(item, currentId, context)
+        list.forEach {
+            if (it.users != null) {
+                it.users.forEach {it1->
+                    it.isLiked = !item.isLiked&&it1.value.toString().replace("id ->","").contains(currentId)
+                }
+            }
+        }
         holder.itemView.ivDelete.setOnClickListener { deleteListener(item) }
+        holder.itemView.ivLike.setOnClickListener {
+            likeListener(item) }
+        holder.bindItems(item, currentId, context)
     }
 
     override fun getItemCount(): Int {
@@ -31,12 +44,19 @@ class PostsAdapter(val currentId:String, val context: Context, val list:ArrayLis
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun bindItems(post: Post,currentId:String,  context:Context) {
+        fun bindItems(post: Post, currentId: String, context: Context) {
             itemView.tvSender.text = post.sender
             itemView.tvText.text = post.text
-            itemView.tvCount.text = post.likes.toString()
-            if(currentId==post.sender){
+            if(post.users!=null){
+                itemView.tvCount.text = post.users.size.toString()
+            }else{
+                itemView.tvCount.text = "0"
+            }
+            if (currentId == post.sender) {
                 itemView.ivDelete.visibility = View.VISIBLE
+            }
+            if(post.isLiked){
+                itemView.ivLike.setImageResource(R.drawable.ic_wall)
             }
             Glide.with(context)
                 .load(post.uri)

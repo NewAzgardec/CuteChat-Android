@@ -12,7 +12,6 @@ import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_wall.*
-import kotlinx.android.synthetic.main.layout_account.*
 import timber.log.Timber
 
 class WallFragment : Fragment() {
@@ -37,10 +36,36 @@ class WallFragment : Fragment() {
             FirebaseDatabase.getInstance().getReference("Users").child(currentUser!!.uid)
                 .child("friends")
 
-        adapter = PostsAdapter(currentUser.uid, context!!, posts) { post ->
+        adapter = PostsAdapter(currentUser.uid, context!!, posts, { post ->
             //TODO delete post
-//            removeFromPosts(referencePosts, post)
-        }
+            removeFromPosts(referencePosts, post)
+        }, { post ->
+            referencePosts.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                    Timber.d(p0.message)
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.children.count() > 0) {
+                        p0.children.forEach {
+                            val value = it.getValue(Post::class.java)
+                            if(value!=null) {
+                                if (value.id == post.id && post.isLiked) {
+                                    referencePosts.child(it.key.toString()).child("users").setValue(null)
+                                }else
+                                if (value.id == post.id && !post.isLiked) {
+                                    val hashMap = HashMap<String, String>()
+                                    hashMap["id"] = currentUser.uid
+                                    referencePosts.child(it.key.toString()).child("users").push()
+                                        .setValue(hashMap)
+                                }
+                                adapter!!.notifyDataSetChanged()
+                            }
+                        }
+                    }
+                }
+            })
+        })
 
         referenceFriends.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -72,7 +97,10 @@ class WallFragment : Fragment() {
                                     override fun onDataChange(p0: DataSnapshot) {
                                         val user = p0.getValue(User::class.java)
                                         if (user != null) {
-                                            if (post.sender == currentUser.uid || friendsIds.contains(post.sender) ) {
+                                            if (post.sender == currentUser.uid || friendsIds.contains(
+                                                    post.sender
+                                                )
+                                            ) {
                                                 //TODO add sender name
 //                                                post.sender = user.username
                                                 posts.add(post)
@@ -94,28 +122,28 @@ class WallFragment : Fragment() {
 
         })
     }
-//
-//    private fun removeFromPosts(reference: DatabaseReference, post: Post) {
-//        reference.addValueEventListener(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//                Timber.d(p0.message)
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//                val user = FirebaseAuth.getInstance().currentUser
-//                if (p0.children.count() > 0) {
-//                    p0.children.forEach {
-//                        val value = it.getValue(Post::class.java)
-//                        if (value != null&&user!=null) {
-//                            if (value.uri == post.uri&&value.sender==user.uid) {
-//                                reference.setValue(it.key, null)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        })
-//    }
+
+    private fun removeFromPosts(reference: DatabaseReference, post: Post) {
+        reference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                Timber.d(p0.message)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                val user = FirebaseAuth.getInstance().currentUser
+                if (p0.children.count() > 0) {
+                    p0.children.forEach {
+                        val value = it.getValue(Post::class.java)
+                        if (value != null&&user!=null) {
+                            if (value.uri == post.uri&&value.sender==user.uid) {
+                                reference.child(it.key.toString()).setValue(null)
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
 
     private fun setupRecycler(context: Context) {
         with(rvWall) {

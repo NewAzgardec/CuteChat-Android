@@ -45,6 +45,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-commons:$version"
     implementation "org.jetbrains.anko:anko-coroutines:$version"
     implementation 'com.github.bumptech.glide:glide:4.10.0'
+    implementation 'com.rishabhharit.roundedimageview:RoundedImageView:0.8.4'
     implementation "android.arch.persistence.room:runtime:1.1.1"
     annotationProcessor "android.arch.persistence.room:compiler:1.1.1"
     testImplementation 'junit:junit:4.12'

@@ -88,6 +88,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 if (user2 != null) {
                     try {
                         name.text = user2.username
+                        userEmail.text = user2.email
                         userName = user2.username
                         if(user2.imageUri!=null){
                             Glide.with(context!!).load(user2.imageUri).into(ivAva)
@@ -114,20 +115,25 @@ class AccountFragment : Fragment(), View.OnClickListener {
 
             override fun onDataChange(p0: DataSnapshot) {
                 posts.clear()
-                p0.children.forEach {
-                    val post = it.getValue(Post::class.java)
-                    if (post != null && post.sender == user.uid) {
-                        if(userName!=""){
-                            post.senderName = userName
+                if(p0.children.count()==0){
+                    noPosts.visibility = View.VISIBLE
+                }else {
+                    noPosts.visibility = View.GONE
+                    p0.children.forEach {
+                        val post = it.getValue(Post::class.java)
+                        if (post != null && post.sender == user.uid) {
+                            if (userName != "") {
+                                post.senderName = userName
+                            }
+                            posts.add(post)
                         }
-                        posts.add(post)
                     }
-                }
-                try {
-                    adapter!!.notifyDataSetChanged()
-                    rvPosts.adapter = adapter
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                    try {
+                        adapter!!.notifyDataSetChanged()
+                        rvPosts.adapter = adapter
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
         })

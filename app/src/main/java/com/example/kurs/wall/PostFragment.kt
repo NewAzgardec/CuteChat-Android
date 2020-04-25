@@ -97,12 +97,6 @@ class PostFragment : Fragment(), View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 1 && data != null && data.data != null) {
             imageUri = data.data!!
-//            if(uploadTask!=null&&uploadTask.isInProgress){
-//
-//            }else{
-//                upload()
-//            }
-
             context?.let {
                 Glide.with(it)
                     .load(imageUri)

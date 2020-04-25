@@ -1,24 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:focusableInTouchMode="true">
 
     <EditText
         android:id="@+id/etPhoneNumber"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="16dp"
+        android:digits="+() 1234567890-"
+        android:maxLength="17"
+        android:inputType="phone"
         android:layout_toStartOf="@+id/btnDeletePhone"
-        android:hint="phone" />
+        android:hint="@string/phone" />
 
     <Button
         android:id="@+id/btnDeletePhone"
-        android:layout_width="50dp"
+        android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/etPhoneNumber"
+        android:layout_alignTop="@+id/etPhoneNumber"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:text="X" />
+        android:layout_marginEnd="48dp"
+        android:textSize="20sp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/darkGray"
+        android:background="@drawable/rounded_green_button"
+        android:text="-" />
 </RelativeLayout>

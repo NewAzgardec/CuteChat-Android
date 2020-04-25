@@ -7,24 +7,79 @@
     android:background="@color/colorWhite"
     tools:context=".start.MainActivity">
 
+    <EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="48dp"
+        android:hint="@string/email"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3" />
+
+    <EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginBottom="20dp"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etEmail"
+        app:layout_constraintVertical_bias="0.0" />
+
     <Button
         android:id="@+id/btnEnter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:background="@drawable/rounded_green_button"
+        android:text="@string/enter"
+        android:textColor="@color/darkGray"
+        android:textStyle="bold"
+        android:focusable="true"
+        android:clickable="true"
+        app:layout_constraintEnd_toEndOf="@id/etPassword"
+        app:layout_constraintStart_toStartOf="@id/etPassword"
+        app:layout_constraintTop_toBottomOf="@id/etPassword" />
+
+    <Button
+        android:id="@+id/btnForgetPassword"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:text="@string/enter"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        />
+        android:background="@android:color/transparent"
+        android:text="@string/forget_passwd"
+        android:textAllCaps="false"
+        android:textColor="@color/lightPink"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@id/btnEnter"
+        app:layout_constraintStart_toStartOf="@id/btnEnter"
+        app:layout_constraintTop_toBottomOf="@id/btnEnter" />
 
     <Button
         android:id="@+id/btnReg"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
+        android:layout_marginBottom="16dp"
+        android:background="@android:color/transparent"
         android:text="@string/registartion"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/btnEnter"
+        android:textAllCaps="false"
+        android:textColor="@color/darkGray"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnForgetPassword"
+        app:layout_constraintVertical_bias="1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

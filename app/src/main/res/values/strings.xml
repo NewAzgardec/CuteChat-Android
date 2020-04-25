@@ -10,13 +10,18 @@
     <string name="confirm_email">Подтвердите email</string>
     <string name="error">ошибка</string>
     <string name="empty">Заполнены не все поля!</string>
+    <string name="passwd_dif">Пароли отличаются!</string>
     <string name="email">email</string>
-    <string name="password">password</string>
-    <string name="enter">enter</string>
-    <string name="forget_passwd">forget password</string>
-    <string name="logout">logOut</string>
-    <string name="registartion">registartion</string>
-    <string name="username">username</string>
+    <string name="password">пароль</string>
+    <string name="password2">повторите пароль</string>
+    <string name="enter">войти</string>
+    <string name="forget_passwd">Забыли пароль?</string>
+    <string name="logout">выйти</string>
+    <string name="registartion">Зарегистрироваться</string>
+    <string name="username">имя пользователя</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="phone">телефон</string>
+    <string name="add_phone">добавить телефон</string>
+    <string name="no_posts">У вас еще нет постов. Нажмите + для добавления.</string>
 </resources>

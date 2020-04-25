@@ -17,9 +17,10 @@
 
     <Button
         android:id="@+id/btnAddPost"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:text="+"
+        android:background="@drawable/btn_green_not_clicked"
         android:layout_margin="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>

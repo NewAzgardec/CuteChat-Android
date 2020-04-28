@@ -90,8 +90,10 @@ class AccountFragment : Fragment(), View.OnClickListener {
                         name.text = user2.username
                         userEmail.text = user2.email
                         userName = user2.username
-                        if(user2.imageUri!=null){
+                        if (user2.imageUri != "") {
                             Glide.with(context!!).load(user2.imageUri).into(ivAva)
+                        } else {
+                            Glide.with(context!!).load(R.drawable.ava).into(ivAva)
                         }
                         pbUsername.visibility = View.GONE
                         getPosts(referencePosts, user)
@@ -107,7 +109,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
         btnAddPost.setOnClickListener(this)
     }
 
-    private fun getPosts(referencePosts:DatabaseReference, user:FirebaseUser) {
+    private fun getPosts(referencePosts: DatabaseReference, user: FirebaseUser) {
         referencePosts.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
@@ -115,10 +117,13 @@ class AccountFragment : Fragment(), View.OnClickListener {
 
             override fun onDataChange(p0: DataSnapshot) {
                 posts.clear()
-                if(p0.children.count()==0){
+                if (p0.children.count() == 0) {
+                    pbPosts.visibility = View.GONE
                     noPosts.visibility = View.VISIBLE
-                }else {
-                    noPosts.visibility = View.GONE
+                    view1.visibility = View.GONE
+                    postsTitle.visibility = View.GONE
+                    view2.visibility = View.GONE
+                } else {
                     p0.children.forEach {
                         val post = it.getValue(Post::class.java)
                         if (post != null && post.sender == user.uid) {
@@ -129,7 +134,22 @@ class AccountFragment : Fragment(), View.OnClickListener {
                         }
                     }
                     try {
+                    if (posts.isEmpty()) {
+                        pbPosts.visibility = View.GONE
+                        noPosts.visibility = View.VISIBLE
+                        view1.visibility = View.GONE
+                        postsTitle.visibility = View.GONE
+                        view2.visibility = View.GONE
+                    } else {
+                        noPosts.visibility = View.GONE
+                        view1.visibility = View.VISIBLE
+                        postsTitle.visibility = View.VISIBLE
+                        view2.visibility = View.VISIBLE
+                    }
+
                         adapter!!.notifyDataSetChanged()
+                        pbPosts.visibility = View.GONE
+                        rvPosts.isNestedScrollingEnabled = false
                         rvPosts.adapter = adapter
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -161,6 +181,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                             ed?.apply()
                             setStatus(false)
                             FirebaseAuth.getInstance().signOut()
+                            fragmentManager?.popBackStack()
                             activity!!.finish()
                             startActivity(Intent(activity, MainActivity::class.java))
                         }
@@ -176,7 +197,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                     .addToBackStack(null).commit()
             }
 
-            btnEditProfile ->{
+            btnEditProfile -> {
                 fragmentManager!!.beginTransaction().add(R.id.frameLayout, EditProfileFragment())
                     .addToBackStack(null).commit()
             }

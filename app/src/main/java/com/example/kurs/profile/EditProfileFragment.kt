@@ -21,7 +21,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.valdesekamdem.library.mdtoast.MDToast
-import kotlinx.android.synthetic.main.fragment_edit_account.*
+import kotlinx.android.synthetic.main.layout_edit_account.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -52,7 +52,7 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
         val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
         val referencePhones = FirebaseDatabase.getInstance().getReference("Phones")
 
-        reference.addValueEventListener(object : ValueEventListener {
+        reference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
             }
@@ -64,6 +64,8 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
                         etName.setText(user2.username)
                         if (user2.imageUri != null) {
                             Glide.with(context!!).load(user2.imageUri).into(ivUserAva)
+                        }else{
+                            Glide.with(context!!).load(R.drawable.ava).into(ivUserAva)
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -96,14 +98,16 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
     }
 
     private fun addPhoneView(phone: Phone?) {
-        if (phoneViews.size <= 4) {
+        if (phoneViews.size < 4) {
             try {
                 val view = LayoutInflater.from(context).inflate(R.layout.item_phone, null, false)
                 view.findViewById<Button>(R.id.btnDeletePhone).setOnClickListener {
                     ltPhones.removeView(view)
                     phoneViews.remove(view)
+                    btnAddPhone.visibility = View.VISIBLE
                 }
                 phoneViews.add(view)
+                if (phoneViews.size == 4) btnAddPhone.visibility = View.GONE
                 if (phone != null) {
                     view.findViewById<EditText>(R.id.etPhoneNumber).setText(phone.phone)
                 }
@@ -201,9 +205,11 @@ class EditProfileFragment : Fragment(), View.OnClickListener {
                 phoneViews.forEach {
                     val hashMap2 = HashMap<String, Any>()
                     val phone = it.findViewById<EditText>(R.id.etPhoneNumber)
-                    hashMap2["phone"] = phone.text.toString()
-                    hashMap2["owner"] = currentUser.uid
-                    referencePhones.push().setValue(hashMap2)
+                    if(phone.text.toString().isNotEmpty()) {
+                        hashMap2["phone"] = phone.text.toString()
+                        hashMap2["owner"] = currentUser.uid
+                        referencePhones.push().setValue(hashMap2)
+                    }
                 }
 
 

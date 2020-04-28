@@ -25,16 +25,16 @@ class PostsAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item: Post = list[position]
-        list.forEach {
-            if (it.users != null) {
-                it.users.forEach {it1->
-                    it.isLiked = !item.isLiked&&it1.value.toString().replace("id ->","").contains(currentId)
-                }
+        if(item.users!=null){
+            item.users.forEach {it1->
+                item.isLiked = !item.isLiked&&it1.value.toString().replace("id ->","").contains(currentId)
             }
         }
+
         holder.itemView.ivDelete.setOnClickListener { deleteListener(item) }
         holder.itemView.ivLike.setOnClickListener {
-            likeListener(item) }
+            likeListener(item)
+        }
         holder.bindItems(item, currentId, context)
     }
 
@@ -58,9 +58,14 @@ class PostsAdapter(
             if(post.isLiked){
                 itemView.ivLike.isChecked = true
             }
-            Glide.with(context)
-                .load(post.uri)
-                .into(itemView.ivPost)
+
+            if(post.uri!=null&&post.uri!=""){
+                Glide.with(context)
+                    .load(post.uri)
+                    .into(itemView.ivPost)
+            }else{
+                itemView.ivPost.visibility = View.GONE
+            }
         }
     }
 }

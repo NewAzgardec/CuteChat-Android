@@ -11,23 +11,20 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kurs.R
-import com.example.kurs.common.Constants
 import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.valdesekamdem.library.mdtoast.MDToast
-import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.android.synthetic.main.fragment_search_friends.*
 import timber.log.Timber
-import java.lang.Exception
 
 class SearchFriendsFragment : Fragment() {
 
     val list = ArrayList<User>()
     val searchList = ArrayList<User>()
     val userFriendsIds = ArrayList<String>()
-    private var adapter: FriendsAdapter? = null
+    private var adapter: SearchFriendsAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,7 +42,7 @@ class SearchFriendsFragment : Fragment() {
         val reference = FirebaseDatabase.getInstance().getReference("Users")
         val currentReference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
 
-        adapter = FriendsAdapter(context!!, list, true) { us, pos ->
+        adapter = SearchFriendsAdapter(context!!, list, true) { us, pos ->
             val referenceCurrent = FirebaseDatabase.getInstance().getReference("Users").child(us.id)
             val ref = referenceCurrent.child("newFriends").push()
             val hashMap = HashMap<String, String>()
@@ -99,7 +96,7 @@ class SearchFriendsFragment : Fragment() {
                     searchList.clear()
                     searchFriends(s.toString())
                 } else {
-                    adapter = FriendsAdapter(context!!, list, true) { us, pos ->
+                    adapter = SearchFriendsAdapter(context!!, list, true) { us, pos ->
                         val referenceCurrent =
                             FirebaseDatabase.getInstance().getReference("Users").child(us.id)
                         val ref = referenceCurrent.child("newFriends").push()
@@ -125,13 +122,15 @@ class SearchFriendsFragment : Fragment() {
             }
 
         })
+
+        btnSearchBack.setOnClickListener { fragmentManager?.popBackStack() }
     }
 
     private fun searchFriends(s: String) {
         list.forEach {
             if (it.lowerName.startsWith(s) && !searchList.contains(it)) {
                 searchList.add(it)
-                adapter = FriendsAdapter(context!!, searchList, true) { us, pos ->
+                adapter = SearchFriendsAdapter(context!!, searchList, true) { us, pos ->
                     val referenceCurrent =
                         FirebaseDatabase.getInstance().getReference("Users").child(us.id)
                     val ref = referenceCurrent.child("newFriends").push()
@@ -168,8 +167,21 @@ class SearchFriendsFragment : Fragment() {
                 p0.children.forEach {
                     val user2 = it.getValue(User::class.java)
                     if (user2 != null && user2.id != user.uid && !userFriendsIds.contains(user2.id)) {
-                        list.add(user2)
+                        val newList = user2.newFriends?.values?.toList()?: emptyList()
+                        if (newList.isNotEmpty()){
+                        newList.forEach {l-> if(!l.toString().contains(FirebaseAuth.getInstance().currentUser!!.uid))   list.add(user2)}
+                        } else {
+                            list.add(user2)
+                        }
                     }
+                }
+
+                if(list.isEmpty()){
+                    noUsers.visibility = View.VISIBLE
+                    searchNewFriend.visibility = View.GONE
+                }else{
+                    noUsers.visibility = View.GONE
+                    searchNewFriend.visibility = View.VISIBLE
                 }
                 try {
                     rvSearchedFriends.adapter = adapter

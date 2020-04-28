@@ -7,6 +7,7 @@ data class User (
     val email:String= "",
     val password:String = "",
     val imageUri:String? = "",
+    val newFriends:HashMap<String, Any>? = null,
     val friends:HashMap<String, Any>? = null,
     var onlineStatus:String = ""
 )

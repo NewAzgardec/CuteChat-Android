@@ -119,7 +119,7 @@ class RegistrationActivity : AppCompatActivity(), View.OnClickListener {
                                 val reference =
                                     FirebaseDatabase.getInstance().getReference(Constants.USERS)
                                         .child(user.uid)
-                                val hashMap = HashMap<String, String>()
+                                val hashMap = HashMap<String, Any>()
                                 hashMap[Constants.ID] = user.uid
                                 hashMap[Constants.USERNAME] = username
                                 hashMap["lowerName"] = username.toLowerCase()

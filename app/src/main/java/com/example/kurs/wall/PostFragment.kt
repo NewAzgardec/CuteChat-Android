@@ -17,14 +17,17 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.valdesekamdem.library.mdtoast.MDToast
 import kotlinx.android.synthetic.main.fragment_add_post.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.util.*
 import kotlin.collections.HashMap
 
 class PostFragment : Fragment(), View.OnClickListener {
 
     private var imageUri: Uri? = null
-    private var uploadTask:UploadTask?=null
+    private var uploadTask: UploadTask? = null
     var loadUri = ""
+    var canAdd = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,48 +52,73 @@ class PostFragment : Fragment(), View.OnClickListener {
     }
 
     private fun upload() {
-            val reference = FirebaseStorage.getInstance().getReference("PostImages")
-                .child(System.currentTimeMillis().toString() + "." + getExtension(imageUri!!))
+        if (imageUri != null) {
+            doAsync {
+                val reference = FirebaseStorage.getInstance().getReference("PostImages")
+                    .child(System.currentTimeMillis().toString() + "." + getExtension(imageUri!!))
 
-            uploadTask = reference.putFile(imageUri!!)
-            uploadTask!!.continueWithTask { p0 ->
-                if (!p0.isSuccessful) {
-                    throw p0.exception!!
+                uploadTask = reference.putFile(imageUri!!)
+                uploadTask!!.continueWithTask { p0 ->
+                    if (!p0.isSuccessful) {
+                        throw p0.exception!!
+                    }
+                    reference.downloadUrl
+                }.addOnCompleteListener { p0 ->
+                    if (p0.isSuccessful) {
+                        val dwUri = p0.result.toString()
+                        loadUri = dwUri
+                        canAdd = true
+                    } else {
+                        uiThread {
+                            MDToast.makeText(
+                                context,
+                                "Success",
+                                Toast.LENGTH_LONG,
+                                MDToast.TYPE_ERROR
+                            )
+                                .show()
+                        }
+
+                    }
+                }.addOnFailureListener { p0 ->
+                    loadUri = ""
+                    uiThread {
+                        MDToast.makeText(
+                            context,
+                            p0.localizedMessage,
+                            Toast.LENGTH_LONG,
+                            MDToast.TYPE_ERROR
+                        ).show()
+                    }
                 }
-                reference.downloadUrl
-            }.addOnCompleteListener { p0 ->
-                if (p0.isSuccessful) {
-                    val dwUri = p0.result.toString()
-                    loadUri = dwUri
-                    val ref = FirebaseDatabase.getInstance().getReference("Wall")
-                    val ids = ArrayList<String>()
-                    val comments = ArrayList<Comment>()
-                    val hashMap = HashMap<String, Any>()
-                    hashMap["uri"] = loadUri
-                    hashMap["text"] = postText.text.trim().toString()
-                    hashMap["isLiked"] = false
-                    hashMap["likes"] = 0
-                    hashMap["date"] = Date()
-                    hashMap["sender"] = FirebaseAuth.getInstance().currentUser!!.uid
-                    hashMap["id"] = loadUri
-                    hashMap["users"] = ids
-                    hashMap["comments"] = comments
-                    ref.push().setValue(hashMap)
-                    fragmentManager!!.popBackStack()
-
-                } else {
-                    MDToast.makeText(context, "BAD", Toast.LENGTH_LONG, MDToast.TYPE_ERROR)
-                        .show()
-
-                }
-            }.addOnFailureListener { p0 ->
-                MDToast.makeText(
-                    context,
-                    p0.localizedMessage,
-                    Toast.LENGTH_LONG,
-                    MDToast.TYPE_ERROR
-                ).show()
             }
+        }
+
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            if (imageUri != null && canAdd || imageUri == null) {
+                val ref = FirebaseDatabase.getInstance().getReference("Wall")
+                val ids = ArrayList<String>()
+                val comments = ArrayList<Comment>()
+                val hashMap = HashMap<String, Any>()
+                if (imageUri != null) {
+                    hashMap["uri"] = loadUri
+                    hashMap["id"] = loadUri
+                }
+                hashMap["text"] = postText.text.trim().toString()
+                hashMap["isLiked"] = false
+                hashMap["likes"] = 0
+                hashMap["date"] = Date()
+                hashMap["sender"] = FirebaseAuth.getInstance().currentUser!!.uid
+                hashMap["users"] = ids
+                hashMap["comments"] = comments
+                ref.push().setValue(hashMap)
+                fragmentManager!!.popBackStack()
+            }
+        }
+
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -101,6 +129,7 @@ class PostFragment : Fragment(), View.OnClickListener {
                 Glide.with(it)
                     .load(imageUri)
                     .into(postImage)
+                loadImage.visibility = View.GONE
             }
         }
     }
@@ -114,8 +143,17 @@ class PostFragment : Fragment(), View.OnClickListener {
                 startActivityForResult(intent, 1)
             }
 
-            postAdd->{
-                upload()
+            postAdd -> {
+                if (postText.text.trim().toString().isNotEmpty()) {
+                    upload()
+                } else {
+                    MDToast.makeText(
+                        context,
+                        resources.getString(R.string.empty),
+                        Toast.LENGTH_LONG,
+                        MDToast.TYPE_ERROR
+                    ).show()
+                }
             }
         }
     }

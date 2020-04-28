@@ -16,15 +16,19 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import kotlinx.android.synthetic.main.item_friend.view.*
+import kotlinx.android.synthetic.main.item_friend.view.ivIsOnline
+import kotlinx.android.synthetic.main.item_friend.view.ivPhoto
+import kotlinx.android.synthetic.main.item_friend.view.tvLastMessage
+import kotlinx.android.synthetic.main.item_friend.view.tvName
+import kotlinx.android.synthetic.main.item_friend_add.view.*
 import timber.log.Timber
 
-class FriendsAdapter(val context: Context, val list:ArrayList<User>,  val friends:Boolean, val clickListener: (User, Int) -> Unit) :
-    RecyclerView.Adapter<FriendsAdapter.ViewHolder>() {
+class SearchFriendsAdapter(val context: Context, val list:ArrayList<User>, val friends:Boolean, val clickListener: (User, Int) -> Unit) :
+    RecyclerView.Adapter<SearchFriendsAdapter.ViewHolder>() {
 
     private var lastMessage = ""
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_friend, parent, false)
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_friend_add, parent, false)
         return ViewHolder(v)
     }
 
@@ -37,7 +41,7 @@ class FriendsAdapter(val context: Context, val list:ArrayList<User>,  val friend
         }
 
         holder.bindItems(item, context)
-        holder.itemView.setOnClickListener { clickListener(item, position) }
+        holder.itemView.btnSendRequest.setOnClickListener { clickListener(item, position) }
     }
 
     private fun getLastMessage(id: String, tvLastMessage: TextView?) {

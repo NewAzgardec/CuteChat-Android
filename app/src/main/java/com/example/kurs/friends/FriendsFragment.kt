@@ -13,16 +13,17 @@ import com.example.kurs.R
 import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.fragment_friends.*
 import timber.log.Timber
 
 class FriendsFragment : Fragment(), View.OnClickListener {
 
     val list = ArrayList<User>()
-    val newUsers = ArrayList<User>()
     private var adapter: FriendsAdapter? = null
-    private var newUsersAdapter: NewFriendsAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,7 +58,6 @@ class FriendsFragment : Fragment(), View.OnClickListener {
 
         })
 
-        checkNewFriends(user)
         checkFriends(user)
 
         btnAddFriend.setOnClickListener(this)
@@ -70,10 +70,12 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                         newList.add(it)
                     }
                 }
+                deleteVisibility()
                 adapter = FriendsAdapter(context!!, newList, true) { us, pos ->
 
                 }
                 try {
+                    setFriendCount(newList)
                     rvFriends.adapter = adapter
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -83,12 +85,50 @@ class FriendsFragment : Fragment(), View.OnClickListener {
 
                 }
                 try {
+                    setFriendCount(list)
                     rvFriends.adapter = adapter
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
+        }
+    }
 
+    private fun setFriendCount(friends: ArrayList<User>) {
+        friendsCount.text = friends.size.toString() + " "+ getCount(friends.size)
+    }
+
+    private fun getCount(number: Int): String {
+        var n = kotlin.math.abs(number)
+        n %= 100
+        if (n in 5..20) {
+            return resources.getString(R.string.friends_5)
+        }
+        n %= 10
+        if (n == 1) {
+            return resources.getString(R.string.friens_1)
+        }
+        if (n in 2..4) {
+            return resources.getString(R.string.friend_2)
+        }
+        return resources.getString(R.string.friends_5)
+    }
+
+    private fun deleteVisibility() {
+        if(list.isEmpty()){
+            friendsCount.visibility = View.GONE
+            cbOnline.visibility = View.GONE
+            online.visibility = View.GONE
+            online.visibility = View.GONE
+            searchFriend.isFocusable = false
+            noFriends.visibility = View.VISIBLE
+        }else{
+            friendsCount.visibility = View.VISIBLE
+            cbOnline.visibility = View.VISIBLE
+            online.visibility = View.VISIBLE
+            online.visibility = View.VISIBLE
+            searchFriend.isFocusable = true
+            noFriends.visibility = View.GONE
         }
     }
 
@@ -112,7 +152,10 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                     }
                 }
 
+                deleteVisibility()
+
                 try {
+                    setFriendCount(list)
                     rvFriends.adapter = adapter
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -144,6 +187,7 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                         }
 
                         override fun onDataChange(p0: DataSnapshot) {
+                            val value = p0.value
                             val friend = p0.getValue(User::class.java)
 
                             if (friend != null) {
@@ -151,7 +195,10 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                                 list.add(friend)
                             }
 
+                            deleteVisibility()
+
                             try {
+                                setFriendCount(list)
                                 rvFriends.adapter = adapter
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -171,102 +218,23 @@ class FriendsFragment : Fragment(), View.OnClickListener {
             friend.email,
             friend.password,
             friend.imageUri,
+            friend.newFriends,
             friend.friends,
-            ""
-        )
+            "")
         list.forEach {
             val user2 =
-                User(it.id, it.username, it.lowerName, it.email, it.password, it.imageUri, it.friends, "")
+                User(it.id, it.username, it.lowerName, it.email, it.password, it.imageUri, it.newFriends, it.friends, "")
             if (user2 == user) {
                 list.remove(it)
+                deleteVisibility()
                 return true
             }
         }
         return false
     }
 
-    private fun checkNewFriends(user: FirebaseUser) {
-        val referenceCurrent = FirebaseDatabase.getInstance().getReference("Users")
-        val newFriendsReference = referenceCurrent.child(user.uid).child("newFriends")
-        newUsersAdapter = NewFriendsAdapter(newUsers, { us, pos ->
-        },
-            { user1, i ->
-                removeFromNewList(newFriendsReference, user1)
-                val ref = referenceCurrent.child(user.uid).child("friends").push()
-                val hashMap = HashMap<String, String>()
-                hashMap["id"] = user1.id
-                ref.setValue(hashMap)
-
-                val ref2 = referenceCurrent.child(user1.id).child("friends").push()
-                val hashMap2 = HashMap<String, String>()
-                hashMap2["id"] = user.uid
-                ref2.setValue(hashMap2)
-
-                list.add(user1)
-                adapter?.notifyDataSetChanged()
-
-            }, { user2, i ->
-                removeFromNewList(newFriendsReference, user2)
-            })
-
-
-        newFriendsReference.addValueEventListener(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                Timber.d(p0.message)
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                newUsers.clear()
-                p0.children.forEach {
-                    val value = it.value.toString().replace("}", "").split("=")[1]
-                    val ref = FirebaseDatabase.getInstance().getReference("Users")
-                        .child(value)
-                    ref.addValueEventListener(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                            Timber.d(p0.message)
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-                            val newFriend = p0.getValue(User::class.java)
-                            if (newFriend != null && !list.contains(newFriend)) {
-                                newUsers.add(newFriend)
-                            }
-                        }
-                    })
-                }
-            }
-        })
-    }
-
-    private fun removeFromNewList(newFriendsReference: DatabaseReference, user1: User) {
-        newFriendsReference.addValueEventListener(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                Timber.d(p0.message)
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                if (p0.children.count() > 0) {
-                    p0.children.forEach {
-                        val value = it.value.toString().replace("}", "").split("=")[1]
-                        if (value == user1.id) {
-                            newFriendsReference.setValue(it.key, null)
-                        }
-                    }
-                } else {
-                    cvNewFriends.visibility = View.GONE
-                }
-
-            }
-        })
-    }
-
-
     private fun setupRecycler(context: Context) {
         with(rvFriends) {
-            layoutManager = LinearLayoutManager(context)
-            setHasFixedSize(false)
-        }
-        with(rvNewFriends) {
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(false)
         }
@@ -274,17 +242,21 @@ class FriendsFragment : Fragment(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         when (v) {
-            btnAddFriend -> {
+            btnNewFriends -> {
                 val fragment = SearchFriendsFragment()
                 fragmentManager?.beginTransaction()?.add(R.id.frameLayout, fragment)
                     ?.addToBackStack(null)
                     ?.commit()
             }
-            btnNewFriends -> {
-                if (newUsers.isNotEmpty()) {
-                    cvNewFriends.visibility = View.VISIBLE
-                    rvNewFriends.adapter = newUsersAdapter
-                }
+            btnAddFriend -> {
+                val fragment = NewFriendsFragment()
+                fragmentManager?.beginTransaction()?.add(R.id.frameLayout, fragment)
+                    ?.addToBackStack(null)
+                    ?.commit()
+//                if (newUsers.isNotEmpty()) {
+//                    cvNewFriends.visibility = View.VISIBLE
+//                    rvNewFriends.adapter = newUsersAdapter
+//                }
             }
         }
     }

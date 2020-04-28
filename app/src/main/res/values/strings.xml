@@ -24,4 +24,16 @@
     <string name="phone">телефон</string>
     <string name="add_phone">добавить телефон</string>
     <string name="no_posts">У вас еще нет постов. Нажмите + для добавления.</string>
+    <string name="posts_title">Посты</string>
+    <string name="hint_create_post">Введите текст</string>
+    <string name="friends">Друзья</string>
+    <string name="online">online</string>
+    <string name="search_in_friends">Поиск в списке друзей</string>
+    <string name="no_friends">У вас еще нет людей в списке друзей. Попробуйте найти знакомых, нажав на иконку поиска в левом верхнем углу.</string>
+    <string name="friens_1">друг</string>
+    <string name="friend_2">друга</string>
+    <string name="friends_5">друзей</string>
+    <string name="search_friends">Поиск друзей</string>
+    <string name="enter_name">Введите имя</string>
+    <string name="no_users">Нет пользователей</string>
 </resources>

@@ -34,7 +34,7 @@
         android:ellipsize="end"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toRightOf="@id/ivIsOnline"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/btnSendRequest"
         app:layout_constraintTop_toTopOf="@id/ivPhoto"
         app:layout_constraintBottom_toBottomOf="@id/ivPhoto"
         tools:text="username"/>
@@ -50,5 +50,16 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvName"
         tools:text="username"/>
+
+    <ImageButton
+        android:id="@+id/btnSendRequest"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_add_circle"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

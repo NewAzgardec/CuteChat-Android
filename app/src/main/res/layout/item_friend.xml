@@ -18,8 +18,8 @@
 
     <ImageView
         android:id="@+id/ivIsOnline"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
         android:background="@drawable/btn_green_not_clicked"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"

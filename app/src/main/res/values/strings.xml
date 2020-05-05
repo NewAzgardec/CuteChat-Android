@@ -36,4 +36,8 @@
     <string name="search_friends">Поиск друзей</string>
     <string name="enter_name">Введите имя</string>
     <string name="no_users">Нет пользователей</string>
+    <string name="requests">Заявки</string>
+    <string name="no_comments">Комментарии отсутствуют</string>
+    <string name="call">позвонить</string>
+    <string name="hide">скрыть</string>
 </resources>

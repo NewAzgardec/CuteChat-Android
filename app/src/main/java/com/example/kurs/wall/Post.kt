@@ -3,7 +3,7 @@ package com.example.kurs.wall
 import java.util.*
 
 data class Post(
-    val id: String? = null,
+    val id: String? = "",
     val date: Date = Date(),
     var sender: String = "",
     var isLiked: Boolean = false,

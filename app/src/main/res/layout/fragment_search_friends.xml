@@ -28,10 +28,10 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/tvTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="@string/search_friends"
         android:textSize="22sp"
         android:textStyle="bold"
         android:paddingEnd="48dp"

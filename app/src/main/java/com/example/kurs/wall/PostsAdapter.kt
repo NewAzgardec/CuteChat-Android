@@ -14,7 +14,8 @@ class PostsAdapter(
     val context: Context,
     val list: ArrayList<Post>,
     val deleteListener: (Post) -> Unit,
-    val likeListener: (Post) -> Unit
+    val likeListener: (Post) -> Unit,
+    val commentListener: (Post) -> Unit
 ) :
     RecyclerView.Adapter<PostsAdapter.ViewHolder>() {
 
@@ -34,6 +35,9 @@ class PostsAdapter(
         holder.itemView.ivDelete.setOnClickListener { deleteListener(item) }
         holder.itemView.ivLike.setOnClickListener {
             likeListener(item)
+        }
+        holder.itemView.btnComment.setOnClickListener {
+            commentListener(item)
         }
         holder.bindItems(item, currentId, context)
     }

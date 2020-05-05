@@ -23,6 +23,8 @@ import timber.log.Timber
 class FriendsFragment : Fragment(), View.OnClickListener {
 
     val list = ArrayList<User>()
+    val list2 = ArrayList<User>()
+    val newList = ArrayList<User>()
     private var adapter: FriendsAdapter? = null
 
     override fun onCreateView(
@@ -53,7 +55,23 @@ class FriendsFragment : Fragment(), View.OnClickListener {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                searchFriends(s.toString())
+                if (s != null && s.isNotEmpty()) {
+                    searchFriends(s.toString())
+                } else {
+                    if (cbOnline.isChecked) {
+                        adapter = FriendsAdapter(context!!, newList, true) { us, pos ->
+
+                        }
+                        setFriendCount(newList)
+                        rvFriends.adapter = adapter
+                    } else {
+                        adapter = FriendsAdapter(context!!, list, true) { us, pos ->
+
+                        }
+                        setFriendCount(list)
+                        rvFriends.adapter = adapter
+                    }
+                }
             }
 
         })
@@ -64,7 +82,7 @@ class FriendsFragment : Fragment(), View.OnClickListener {
         btnNewFriends.setOnClickListener(this)
         cbOnline.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                val newList = ArrayList<User>()
+                newList.clear()
                 list.forEach {
                     if (it.onlineStatus == "true") {
                         newList.add(it)
@@ -95,7 +113,7 @@ class FriendsFragment : Fragment(), View.OnClickListener {
     }
 
     private fun setFriendCount(friends: ArrayList<User>) {
-        friendsCount.text = friends.size.toString() + " "+ getCount(friends.size)
+        friendsCount.text = friends.size.toString() + " " + getCount(friends.size)
     }
 
     private fun getCount(number: Int): String {
@@ -115,54 +133,48 @@ class FriendsFragment : Fragment(), View.OnClickListener {
     }
 
     private fun deleteVisibility() {
-        if(list.isEmpty()){
+        if (list.isEmpty()) {
             friendsCount.visibility = View.GONE
             cbOnline.visibility = View.GONE
             online.visibility = View.GONE
             online.visibility = View.GONE
-            searchFriend.isFocusable = false
+//            searchFriend.isFocusable = false
             noFriends.visibility = View.VISIBLE
-        }else{
+        } else {
             friendsCount.visibility = View.VISIBLE
             cbOnline.visibility = View.VISIBLE
             online.visibility = View.VISIBLE
             online.visibility = View.VISIBLE
-            searchFriend.isFocusable = true
+//            searchFriend.isFocusable = true
             noFriends.visibility = View.GONE
         }
     }
 
     private fun searchFriends(s: String) {
-        val user = FirebaseAuth.getInstance().currentUser
-        val query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("lowerName")
-            .startAt(s).endAt(s + "\uf8ff")
-        query.addValueEventListener(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                Timber.d(p0.message)
-            }
 
-            override fun onDataChange(p0: DataSnapshot) {
-                list.clear()
-                p0.children.forEach {
-                    val u = it.getValue(User::class.java)
-                    if (u != null && user != null) {
-                        if (u.id != user.uid) {
-                            list.add(u)
-                        }
-                    }
-                }
-
-                deleteVisibility()
-
-                try {
-                    setFriendCount(list)
-                    rvFriends.adapter = adapter
-                } catch (e: Exception) {
-                    e.printStackTrace()
+        if (cbOnline.isChecked) {
+            newList.forEach {
+                if (it.lowerName.startsWith(s)) {
+                    list2.add(it)
                 }
             }
+        } else {
+            list.forEach {
+                if (it.lowerName.startsWith(s)) {
+                    list2.add(it)
+                }
+            }
+        }
+        deleteVisibility()
+        adapter = FriendsAdapter(context!!, list2, true) { us, pos ->
 
-        })
+        }
+        try {
+            setFriendCount(list2)
+            rvFriends.adapter = adapter
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun checkFriends(user: FirebaseUser) {
@@ -187,7 +199,6 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                         }
 
                         override fun onDataChange(p0: DataSnapshot) {
-                            val value = p0.value
                             val friend = p0.getValue(User::class.java)
 
                             if (friend != null) {
@@ -220,10 +231,21 @@ class FriendsFragment : Fragment(), View.OnClickListener {
             friend.imageUri,
             friend.newFriends,
             friend.friends,
-            "")
+            ""
+        )
         list.forEach {
             val user2 =
-                User(it.id, it.username, it.lowerName, it.email, it.password, it.imageUri, it.newFriends, it.friends, "")
+                User(
+                    it.id,
+                    it.username,
+                    it.lowerName,
+                    it.email,
+                    it.password,
+                    it.imageUri,
+                    it.newFriends,
+                    it.friends,
+                    ""
+                )
             if (user2 == user) {
                 list.remove(it)
                 deleteVisibility()
@@ -253,10 +275,6 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                 fragmentManager?.beginTransaction()?.add(R.id.frameLayout, fragment)
                     ?.addToBackStack(null)
                     ?.commit()
-//                if (newUsers.isNotEmpty()) {
-//                    cvNewFriends.visibility = View.VISIBLE
-//                    rvNewFriends.adapter = newUsersAdapter
-//                }
             }
         }
     }

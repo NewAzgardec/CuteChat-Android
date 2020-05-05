@@ -16,7 +16,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.valdesekamdem.library.mdtoast.MDToast
-import kotlinx.android.synthetic.main.fragment_add_post.*
+import kotlinx.android.synthetic.main.layout_post.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.util.*
@@ -39,7 +39,6 @@ class PostFragment : Fragment(), View.OnClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
 
         postImage.setOnClickListener(this)
         postAdd.setOnClickListener(this)
@@ -100,7 +99,6 @@ class PostFragment : Fragment(), View.OnClickListener {
             if (imageUri != null && canAdd || imageUri == null) {
                 val ref = FirebaseDatabase.getInstance().getReference("Wall")
                 val ids = ArrayList<String>()
-                val comments = ArrayList<Comment>()
                 val hashMap = HashMap<String, Any>()
                 if (imageUri != null) {
                     hashMap["uri"] = loadUri
@@ -108,17 +106,13 @@ class PostFragment : Fragment(), View.OnClickListener {
                 }
                 hashMap["text"] = postText.text.trim().toString()
                 hashMap["isLiked"] = false
-                hashMap["likes"] = 0
                 hashMap["date"] = Date()
                 hashMap["sender"] = FirebaseAuth.getInstance().currentUser!!.uid
                 hashMap["users"] = ids
-                hashMap["comments"] = comments
                 ref.push().setValue(hashMap)
                 fragmentManager!!.popBackStack()
             }
         }
-
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

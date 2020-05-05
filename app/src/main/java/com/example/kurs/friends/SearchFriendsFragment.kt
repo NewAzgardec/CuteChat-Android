@@ -38,11 +38,12 @@ class SearchFriendsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecycler(requireContext())
+        tvTitle.text = resources.getString(R.string.search_friends)
         val user = FirebaseAuth.getInstance().currentUser!!
         val reference = FirebaseDatabase.getInstance().getReference("Users")
         val currentReference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
 
-        adapter = SearchFriendsAdapter(context!!, list, true) { us, pos ->
+        adapter = SearchFriendsAdapter(context!!, list, true, { us, pos ->
             val referenceCurrent = FirebaseDatabase.getInstance().getReference("Users").child(us.id)
             val ref = referenceCurrent.child("newFriends").push()
             val hashMap = HashMap<String, String>()
@@ -57,7 +58,19 @@ class SearchFriendsFragment : Fragment() {
                     ).show()
                 }
             }
-        }
+        },{us, pos ->
+            val newFriendsReference = reference.child(user.uid).child("newFriends")
+            removeFromNewList(newFriendsReference, us)
+            val ref = reference.child(user.uid).child("friends").push()
+            val hashMap = HashMap<String, String>()
+            hashMap["id"] = us.id
+            ref.setValue(hashMap)
+
+            val ref2 = reference.child(us.id).child("friends").push()
+            val hashMap2 = HashMap<String, String>()
+            hashMap2["id"] = user.uid
+            ref2.setValue(hashMap2)
+        })
 
         currentReference.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -92,11 +105,11 @@ class SearchFriendsFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (s != "") {
+                if (s != null&&s.isNotEmpty()) {
                     searchList.clear()
                     searchFriends(s.toString())
                 } else {
-                    adapter = SearchFriendsAdapter(context!!, list, true) { us, pos ->
+                    adapter = SearchFriendsAdapter(context!!, list, true,{ us, pos ->
                         val referenceCurrent =
                             FirebaseDatabase.getInstance().getReference("Users").child(us.id)
                         val ref = referenceCurrent.child("newFriends").push()
@@ -112,7 +125,19 @@ class SearchFriendsFragment : Fragment() {
                                 ).show()
                             }
                         }
-                    }
+                    },{us, pos ->
+                        val newFriendsReference = reference.child(user.uid).child("newFriends")
+                        removeFromNewList(newFriendsReference, us)
+                        val ref = reference.child(user.uid).child("friends").push()
+                        val hashMap = HashMap<String, String>()
+                        hashMap["id"] = us.id
+                        ref.setValue(hashMap)
+
+                        val ref2 = reference.child(us.id).child("friends").push()
+                        val hashMap2 = HashMap<String, String>()
+                        hashMap2["id"] = user.uid
+                        ref2.setValue(hashMap2)
+                    })
                     try {
                         rvSearchedFriends.adapter = adapter
                     } catch (e: Exception) {
@@ -126,33 +151,70 @@ class SearchFriendsFragment : Fragment() {
         btnSearchBack.setOnClickListener { fragmentManager?.popBackStack() }
     }
 
+    private fun removeFromNewList(newFriendsReference: DatabaseReference, user1: User) {
+        newFriendsReference.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                Timber.d(p0.message)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.children.count() > 0) {
+                    p0.children.forEach {
+                        val value = it.value.toString().replace("}", "").split("=")[1]
+                        if (value == user1.id) {
+                            newFriendsReference.child(it.key.toString()).setValue(null)
+                        }
+                    }
+                }
+            }
+        })
+    }
+
     private fun searchFriends(s: String) {
         list.forEach {
             if (it.lowerName.startsWith(s) && !searchList.contains(it)) {
                 searchList.add(it)
-                adapter = SearchFriendsAdapter(context!!, searchList, true) { us, pos ->
-                    val referenceCurrent =
-                        FirebaseDatabase.getInstance().getReference("Users").child(us.id)
-                    val ref = referenceCurrent.child("newFriends").push()
-                    val hashMap = HashMap<String, String>()
-                    hashMap["id"] = FirebaseAuth.getInstance().currentUser!!.uid
-                    ref.setValue(hashMap).addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            MDToast.makeText(
-                                context,
-                                resources.getString(R.string.success),
-                                Toast.LENGTH_LONG,
-                                MDToast.TYPE_INFO
-                            ).show()
-                        }
-                    }
-                }
-                try {
-                    rvSearchedFriends.adapter = adapter
-                } catch (e: Exception) {
-                    e.printStackTrace()
+
+
+            }
+        }
+
+        adapter = SearchFriendsAdapter(context!!, searchList, true, { us, pos ->
+            val referenceCurrent =
+                FirebaseDatabase.getInstance().getReference("Users").child(us.id)
+            val ref = referenceCurrent.child("newFriends").push()
+            val hashMap = HashMap<String, String>()
+            hashMap["id"] = FirebaseAuth.getInstance().currentUser!!.uid
+            ref.setValue(hashMap).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    MDToast.makeText(
+                        context,
+                        resources.getString(R.string.success),
+                        Toast.LENGTH_LONG,
+                        MDToast.TYPE_INFO
+                    ).show()
                 }
             }
+        },{us, pos ->
+            val user = FirebaseAuth.getInstance().currentUser!!
+            val reference = FirebaseDatabase.getInstance().getReference("Users")
+            val newFriendsReference = reference.child(user.uid).child("newFriends")
+            removeFromNewList(newFriendsReference, us)
+            val ref = reference.child(user.uid).child("friends").push()
+            val hashMap = HashMap<String, String>()
+            hashMap["id"] = us.id
+            ref.setValue(hashMap)
+
+            val ref2 = reference.child(us.id).child("friends").push()
+            val hashMap2 = HashMap<String, String>()
+            hashMap2["id"] = user.uid
+            ref2.setValue(hashMap2)
+        })
+
+        try {
+            rvSearchedFriends.adapter = adapter
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -175,7 +237,7 @@ class SearchFriendsFragment : Fragment() {
                         }
                     }
                 }
-
+                try {
                 if(list.isEmpty()){
                     noUsers.visibility = View.VISIBLE
                     searchNewFriend.visibility = View.GONE
@@ -183,7 +245,7 @@ class SearchFriendsFragment : Fragment() {
                     noUsers.visibility = View.GONE
                     searchNewFriend.visibility = View.VISIBLE
                 }
-                try {
+
                     rvSearchedFriends.adapter = adapter
                 } catch (e: Exception) {
                     e.printStackTrace()

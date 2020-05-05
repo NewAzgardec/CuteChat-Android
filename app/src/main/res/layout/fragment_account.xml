@@ -8,6 +8,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="70dp"
         android:fillViewport="true">
         <include
             layout="@layout/layout_account"
@@ -17,8 +18,8 @@
 
     <Button
         android:id="@+id/btnAddPost"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:text="+"
         android:background="@drawable/btn_green_not_clicked"
         android:layout_margin="16dp"

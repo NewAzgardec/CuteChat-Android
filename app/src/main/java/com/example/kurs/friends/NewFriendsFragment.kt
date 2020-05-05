@@ -31,7 +31,7 @@ class NewFriendsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        tvTitle.text = resources.getString(R.string.requests)
         setupRecycler(requireContext())
 
         checkNewFriends(FirebaseAuth.getInstance().currentUser!!)
@@ -81,9 +81,15 @@ class NewFriendsFragment : Fragment() {
                                 newUsers.add(newFriend)
                             }
                             rvSearchedFriends.adapter = newUsersAdapter
-
                         }
                     })
+                }
+                if(newUsers.isEmpty()){
+                    noUsers.visibility = View.VISIBLE
+                    searchNewFriend.visibility = View.GONE
+                }else{
+                    noUsers.visibility = View.GONE
+                    searchNewFriend.visibility = View.VISIBLE
                 }
             }
         })
@@ -103,7 +109,7 @@ class NewFriendsFragment : Fragment() {
                     p0.children.forEach {
                         val value = it.value.toString().replace("}", "").split("=")[1]
                         if (value == user1.id) {
-                            newFriendsReference.setValue(it.key, null)
+                            newFriendsReference.child(it.key.toString()).setValue(null)
                         }
                     }
                 } else {

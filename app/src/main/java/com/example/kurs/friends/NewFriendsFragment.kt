@@ -12,7 +12,6 @@ import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.android.synthetic.main.fragment_search_friends.*
 import timber.log.Timber
 
@@ -112,10 +111,7 @@ class NewFriendsFragment : Fragment() {
                             newFriendsReference.child(it.key.toString()).setValue(null)
                         }
                     }
-                } else {
-                    cvNewFriends.visibility = View.GONE
                 }
-
             }
         })
     }

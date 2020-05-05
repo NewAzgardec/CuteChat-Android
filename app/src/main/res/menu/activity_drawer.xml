@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/group"
+        android:checkableBehavior="single">
     <item
         android:id="@+id/action_profile"
-        android:title="Профиль"
+        android:title="@string/account"
         android:icon="@drawable/ic_person"
+        android:checked="true"
         />
     <item
         android:id="@+id/action_friends"
-        android:title="Друзья"
+        android:title="@string/friends"
         android:icon="@drawable/ic_friends"
         />
     <item
         android:id="@+id/action_messages"
-        android:title="Сообщения"
+        android:title="@string/messages"
         android:icon="@drawable/ic_chat"
         />
     <item
         android:id="@+id/action_wall"
-        android:title="Стена"
+        android:title="@string/wall"
         android:icon="@drawable/ic_wall"
         />
     <item
         android:id="@+id/action_settings"
-        android:title="Настройки"
+        android:title="@string/settings"
         android:icon="@drawable/ic_settings"
         />
+    </group>
 </menu>

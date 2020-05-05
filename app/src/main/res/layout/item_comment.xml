@@ -5,9 +5,11 @@
     android:layout_margin="16dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:strokeWidth="2dp"
+        app:strokeColor="#000000"
         android:backgroundTint="@color/lightYellow"
         app:cardCornerRadius="10dp">
 
@@ -21,6 +23,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 android:text="Mashuta"
+                android:textColor="#000000"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -50,10 +53,11 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 android:text="text"
+                android:textColor="#000000"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvCommentSender" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

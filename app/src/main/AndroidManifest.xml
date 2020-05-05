@@ -25,7 +25,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".start.RegistrationActivity" />
-        <activity android:name=".EnterActivity" />
+        <activity android:name=".EnterActivity"
+            />
     </application>
 
 </manifest>

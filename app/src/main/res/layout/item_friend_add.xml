@@ -32,6 +32,7 @@
         android:textSize="16sp"
         android:maxLines="1"
         android:ellipsize="end"
+        android:textColor="@color/darkGray"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toRightOf="@id/ivIsOnline"
         app:layout_constraintRight_toLeftOf="@id/btnSendRequest"

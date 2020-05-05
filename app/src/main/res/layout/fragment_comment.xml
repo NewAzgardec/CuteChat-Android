@@ -15,13 +15,20 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_comment" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/violet"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
     <EditText
         android:id="@+id/etCommentText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:background="@drawable/round_corners"
+        android:background="@drawable/round_corners_white"
         android:padding="8dp"
+        android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="@+id/btnSendComment"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/btnSendComment"
@@ -43,6 +50,7 @@
         android:layout_height="wrap_content"
         android:text="@string/no_comments"
         android:visibility="gone"
+        android:textColor="#000000"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"

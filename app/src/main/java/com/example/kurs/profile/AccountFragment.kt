@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -50,8 +51,8 @@ class AccountFragment : Fragment(), View.OnClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecycler(requireContext())
-        val user = FirebaseAuth.getInstance().currentUser!!
-        val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
+        val user = FirebaseAuth.getInstance().currentUser
+        val reference = FirebaseDatabase.getInstance().getReference("Users").child(user?.uid ?: "")
         val referencePosts = FirebaseDatabase.getInstance().getReference("Wall")
         val referencePhones = FirebaseDatabase.getInstance().getReference("Phones")
 
@@ -69,13 +70,13 @@ class AccountFragment : Fragment(), View.OnClickListener {
                             phoneList.add(phone)
                             addPhoneView(phone)
                         }
-                        try{
+                        try {
                             if (phoneList.isNotEmpty()) {
                                 showPhones.visibility = View.VISIBLE
                             } else {
                                 showPhones.visibility = View.GONE
                             }
-                        }catch (e:java.lang.Exception){
+                        } catch (e: java.lang.Exception) {
                             e.printStackTrace()
                         }
                     }
@@ -83,7 +84,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
             }
         })
 
-        adapter = PostsAdapter(user.uid, context!!, posts, { post ->
+        adapter = PostsAdapter(user?.uid ?: "", context!!, posts, { post ->
             removeFromPosts(referencePosts, post)
         }, { post ->
             referencePosts.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -103,7 +104,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                                 } else
                                     if (value.date.time == post.date.time && !post.isLiked) {
                                         val hashMap = HashMap<String, String>()
-                                        hashMap["id"] = user.uid
+                                        hashMap["id"] = user?.uid ?: ""
                                         referencePosts.child(it.key.toString()).child("users")
                                             .push()
                                             .setValue(hashMap)
@@ -179,11 +180,11 @@ class AccountFragment : Fragment(), View.OnClickListener {
 
     private fun startCall(phone: Phone) {
         val intent = Intent(Intent.ACTION_CALL)
-        intent.data = Uri.parse("tel:"+phone.phone)
+        intent.data = Uri.parse("tel:" + phone.phone)
         startActivity(intent)
     }
 
-    private fun checkSelfPermission(): Boolean{
+    private fun checkSelfPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             requireContext(),
             CALL_PHONE
@@ -207,7 +208,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
         }
     }
 
-    private fun getPosts(referencePosts: DatabaseReference, user: FirebaseUser) {
+    private fun getPosts(referencePosts: DatabaseReference, user: FirebaseUser?) {
         referencePosts.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
@@ -224,7 +225,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 } else {
                     p0.children.forEach {
                         val post = it.getValue(Post::class.java)
-                        if (post != null && post.sender == user.uid) {
+                        if (post != null && post.sender == user?.uid ?: "") {
                             if (userName != "") {
                                 post.senderName = userName
                             }
@@ -272,16 +273,8 @@ class AccountFragment : Fragment(), View.OnClickListener {
                         message(R.string.q_exit)
                         positiveButton(R.string.yes) {
                             cancel()
-                            val prefs =
-                                context.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
-                            val ed = prefs.edit()
-                            ed?.putBoolean(Constants.IS_LOGGED, false)
-                            ed?.apply()
-                            setStatus(false)
-                            FirebaseAuth.getInstance().signOut()
-                            fragmentManager?.popBackStack()
-                            activity!!.finish()
-                            startActivity(Intent(activity, MainActivity::class.java))
+
+                            startMain()
                         }
                         negativeButton(R.string.cancel) {
                             cancel()
@@ -310,6 +303,21 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 }
             }
         }
+    }
+
+    private fun startMain() {
+        val prefs =
+            context!!.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
+        val ed = prefs.edit()
+        ed?.putBoolean(Constants.IS_LOGGED, false)
+        ed?.apply()
+        setStatus(false)
+        FirebaseAuth.getInstance().signOut()
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        activity!!.finishAffinity()
+
+        startActivity(Intent(activity, MainActivity::class.java))
     }
 
     private fun removeFromPosts(reference: DatabaseReference, post: Post) {

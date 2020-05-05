@@ -6,7 +6,7 @@
     <string name="yes">да</string>
     <string name="cancel">отмена</string>
     <string name="sended_msg">Отправлено письмо на почту для изменения пароля</string>
-    <string name="success">Success</string>
+    <string name="success">OK</string>
     <string name="confirm_email">Подтвердите email</string>
     <string name="error">ошибка</string>
     <string name="empty">Заполнены не все поля!</string>
@@ -29,7 +29,7 @@
     <string name="friends">Друзья</string>
     <string name="online">online</string>
     <string name="search_in_friends">Поиск в списке друзей</string>
-    <string name="no_friends">У вас еще нет людей в списке друзей. Попробуйте найти знакомых, нажав на иконку поиска в левом верхнем углу.</string>
+    <string name="no_friends">Вы еще не добавили друзей. Попробуйте найти знакомых, нажав на иконку поиска в левом верхнем углу.</string>
     <string name="friens_1">друг</string>
     <string name="friend_2">друга</string>
     <string name="friends_5">друзей</string>
@@ -40,4 +40,10 @@
     <string name="no_comments">Комментарии отсутствуют</string>
     <string name="call">позвонить</string>
     <string name="hide">скрыть</string>
+    <string name="dark_theme">темная тема </string>
+    <string name="eng_lang">английский язык</string>
+    <string name="account">Профиль</string>
+    <string name="messages">Сообщения</string>
+    <string name="wall">Стена</string>
+    <string name="settings">Настройки</string>
 </resources>

@@ -20,6 +20,7 @@
         android:id="@+id/tvName"
         android:layout_width="0dp"
         android:layout_margin="8dp"
+        android:textColor="@color/darkGray"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/ivNewPhoto"

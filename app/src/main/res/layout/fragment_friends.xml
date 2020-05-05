@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorWhite">
+    android:background="@color/white">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarFriends"
@@ -27,8 +27,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:background="@drawable/btn_green_not_clicked"
-        android:backgroundTint="@color/white"
+        android:background="@drawable/round_corners_white"
+        android:textColor="#000000"
         android:ellipsize="end"
         android:hint="@string/search_in_friends"
         android:maxLines="1"
@@ -68,6 +68,7 @@
         android:text="@string/friends"
         android:textSize="22sp"
         android:textStyle="bold"
+        android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="@id/toolbarFriends"
         app:layout_constraintEnd_toStartOf="@id/btnAddFriend"
         app:layout_constraintStart_toEndOf="@id/btnNewFriends"
@@ -84,26 +85,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cvNewFriends"
-        android:layout_width="0dp"
-        android:layout_height="250dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/btnNewFriends"
-        app:layout_constraintRight_toLeftOf="@id/btnAddFriend"
-        tools:visibility="visible">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvNewFriends"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="8dp"
-            android:background="@color/colorInfo"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:listitem="@layout/item_new_friend" />
-    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/friendsCount"
@@ -112,6 +93,7 @@
         android:layout_margin="16dp"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:textColor="@color/darkGray"
         app:layout_constraintEnd_toStartOf="@id/online"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbarFriends"
@@ -123,6 +105,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="@string/online"
+        android:textColor="@color/darkGray"
         android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/cbOnline"

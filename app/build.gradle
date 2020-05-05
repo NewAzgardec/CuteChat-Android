@@ -47,6 +47,8 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     implementation 'com.rishabhharit.roundedimageview:RoundedImageView:0.8.4'
     implementation "android.arch.persistence.room:runtime:1.1.1"
+    implementation 'us.belka:androidtoggleswitch:1.2.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha05'
     annotationProcessor "android.arch.persistence.room:compiler:1.1.1"
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'

@@ -2,7 +2,6 @@ package com.example.kurs.wall
 
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -94,6 +93,7 @@ class WallFragment : Fragment() {
                     friendsIds.add(id)
                 }
 
+
                 getPosts(referencePosts, currentUser)
             }
         })
@@ -112,7 +112,7 @@ class WallFragment : Fragment() {
                     if (post != null) {
                         val ref = FirebaseDatabase.getInstance().getReference("Users")
                             .child(post.sender)
-                        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                        ref.addValueEventListener(object : ValueEventListener {
                             override fun onCancelled(p0: DatabaseError) {
                                 Timber.d(p0.message)
                             }
@@ -120,27 +120,22 @@ class WallFragment : Fragment() {
                             override fun onDataChange(p0: DataSnapshot) {
                                 val user = p0.getValue(User::class.java)
                                 if (user != null) {
-                                    if (post.sender == currentUser.uid || friendsIds.contains(
+                                    if (friendsIds.contains(
                                             post.sender
-                                        )
+                                        ) || post.sender == currentUser.uid
                                     ) {
                                         post.senderName = user.username
                                         posts.add(post)
                                         posts.sortByDescending { p -> p.date }
+                                        adapter!!.notifyDataSetChanged()
                                     }
                                 }
                             }
                         })
                     }
+
                 }
 
-                Handler().postDelayed({
-                    try {
-                        adapter!!.notifyDataSetChanged()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }, 15)
             }
         })
     }
@@ -176,7 +171,7 @@ class WallFragment : Fragment() {
                 if (p0.children.count() > 0) {
                     p0.children.forEach {
                         val value = it.getValue(Comment::class.java)
-                        if(value!=null&&value.postTime==post.date.time.toString()){
+                        if (value != null && value.postTime == post.date.time.toString()) {
                             referenceComments.child(it.key.toString()).setValue(null)
                         }
                     }

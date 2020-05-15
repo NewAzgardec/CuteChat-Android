@@ -69,7 +69,7 @@ class CommentFragment : Fragment(), View.OnClickListener {
                                         val us = p0.getValue(User::class.java)
                                         if (us != null) {
                                             val hashMap = HashMap<String, Any>()
-                                            hashMap["senderName"] = us.username
+                                            hashMap["username"] = us.username
                                             referenceUsers.child(com.sender).updateChildren(hashMap)
                                             com.senderName = us.username
                                         }

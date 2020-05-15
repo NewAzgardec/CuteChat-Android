@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Kurs</string>
+    <string name="app_name">CuteChat</string>
     <string name="ready">ready</string>
     <string name="verification">A confirmation email has been sent to your mail</string>
     <string name="q_exit">Are you sure you want to logout?</string>
@@ -46,4 +46,5 @@
     <string name="messages">Messages</string>
     <string name="wall">Wall</string>
     <string name="settings">Settings</string>
+    <string name="user_no_posts">This user has no entries yet.</string>
 </resources>

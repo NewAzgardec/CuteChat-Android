@@ -1,4 +1,4 @@
-package com.example.kurs.profile
+package com.example.kurs.friends.account
 
 import android.Manifest.permission.CALL_PHONE
 import android.content.Context
@@ -11,31 +11,27 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.afollestad.materialdialogs.MaterialDialog
 import com.bumptech.glide.Glide
 import com.example.kurs.R
-import com.example.kurs.comment.Comment
 import com.example.kurs.comment.CommentFragment
-import com.example.kurs.common.Constants
-import com.example.kurs.start.MainActivity
+import com.example.kurs.profile.Phone
+import com.example.kurs.profile.User
 import com.example.kurs.wall.Post
-import com.example.kurs.wall.PostFragment
 import com.example.kurs.wall.PostsAdapter
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import kotlinx.android.synthetic.main.fragment_account.*
-import kotlinx.android.synthetic.main.layout_account.*
+import kotlinx.android.synthetic.main.layout_friend_account.*
 import timber.log.Timber
 
-class AccountFragment : Fragment(), View.OnClickListener {
+class FriendAccount : Fragment(), View.OnClickListener {
     private var adapter: PostsAdapter? = null
     var posts = ArrayList<Post>()
     var userName = ""
+    var friendId = ""
+    var isExists = false
     val phoneList = ArrayList<Phone>()
     var phoneViews = ArrayList<View>()
     var selectedPhone = Phone()
@@ -45,14 +41,23 @@ class AccountFragment : Fragment(), View.OnClickListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_account, container, false)
+        return inflater.inflate(R.layout.fragment_friend_account, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecycler(requireContext())
-        val user = FirebaseAuth.getInstance().currentUser
-        val reference = FirebaseDatabase.getInstance().getReference("Users").child(user?.uid ?: "")
+
+        if (arguments != null) {
+            friendId = arguments!!.getString("friendId", "")
+            isExists = arguments!!.getBoolean("isExists")
+        }
+
+        if (isExists) {
+            removeFromFriends.visibility = View.VISIBLE
+        }
+
+        val reference = FirebaseDatabase.getInstance().getReference("Users").child(friendId)
         val referencePosts = FirebaseDatabase.getInstance().getReference("Wall")
         val referencePhones = FirebaseDatabase.getInstance().getReference("Phones")
 
@@ -62,11 +67,10 @@ class AccountFragment : Fragment(), View.OnClickListener {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                val curUser = FirebaseAuth.getInstance().currentUser
                 if (p0.children.count() > 0) {
                     p0.children.forEach {
                         val phone = it.getValue(Phone::class.java)
-                        if (!phoneList.contains(phone) && phone != null && curUser != null && phone.owner == curUser.uid) {
+                        if (!phoneList.contains(phone) && phone != null && friendId != "" && phone.owner == friendId) {
                             phoneList.add(phone)
                             addPhoneView(phone)
                         }
@@ -83,9 +87,9 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 }
             }
         })
+        val us = FirebaseAuth.getInstance().currentUser
 
-        adapter = PostsAdapter(user?.uid ?: "", context!!, posts, { post ->
-            removeFromPosts(referencePosts, post)
+        adapter = PostsAdapter(us?.uid ?: "", context!!, posts, {
         }, { post ->
             referencePosts.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
@@ -104,7 +108,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                                 } else
                                     if (value.date.time == post.date.time && !post.isLiked) {
                                         val hashMap = HashMap<String, String>()
-                                        hashMap["id"] = user?.uid ?: ""
+                                        hashMap["id"] = us?.uid ?: ""
                                         referencePosts.child(it.key.toString()).child("users")
                                             .push()
                                             .setValue(hashMap)
@@ -145,7 +149,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                             Glide.with(context!!).load(R.drawable.ava).into(ivAva)
                         }
                         pbUsername.visibility = View.GONE
-                        getPosts(referencePosts, user)
+                        getPosts(referencePosts, friendId)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
@@ -153,9 +157,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
             }
         })
 
-        logOut.setOnClickListener(this)
-        btnEditProfile.setOnClickListener(this)
-        btnAddPost.setOnClickListener(this)
+        removeFromFriends.setOnClickListener(this)
         showPhones.setOnClickListener(this)
     }
 
@@ -208,7 +210,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
         }
     }
 
-    private fun getPosts(referencePosts: DatabaseReference, user: FirebaseUser?) {
+    private fun getPosts(referencePosts: DatabaseReference, userId: String?) {
         referencePosts.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
@@ -225,7 +227,7 @@ class AccountFragment : Fragment(), View.OnClickListener {
                 } else {
                     p0.children.forEach {
                         val post = it.getValue(Post::class.java)
-                        if (post != null && post.sender == user?.uid ?: "") {
+                        if (post != null && post.sender == userId ?: "") {
                             if (userName != "") {
                                 post.senderName = userName
                             }
@@ -268,30 +270,54 @@ class AccountFragment : Fragment(), View.OnClickListener {
 
     override fun onClick(p0: View?) {
         when (p0) {
-            logOut -> {
-                context?.let {
-                    MaterialDialog(it).show {
-                        message(R.string.q_exit)
-                        positiveButton(R.string.yes) {
-                            cancel()
+            removeFromFriends -> {
+                val referenceCurrent = FirebaseDatabase.getInstance().getReference("Users")
+                val currentFriendsRef =
+                    referenceCurrent.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        .child("friends")
 
-                            startMain()
-                        }
-                        negativeButton(R.string.cancel) {
-                            cancel()
+                val friendRef =
+                    referenceCurrent.child(friendId)
+                        .child("friends")
+
+                currentFriendsRef.addValueEventListener(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                        Timber.d(p0.message)
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        if (p0.children.count() > 0) {
+                            p0.children.forEach {
+                                val value = it.value.toString().replace("}", "").split("=")[1]
+                                if (value == friendId) {
+                                    currentFriendsRef.child(it.key.toString()).setValue(null)
+                                }
+                            }
                         }
                     }
-                }
-            }
+                })
 
-            btnAddPost -> {
-                fragmentManager!!.beginTransaction().add(R.id.frameLayout, PostFragment())
-                    .addToBackStack(null).commit()
-            }
+                friendRef.addValueEventListener(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                        Timber.d(p0.message)
+                    }
 
-            btnEditProfile -> {
-                fragmentManager!!.beginTransaction().add(R.id.frameLayout, EditProfileFragment())
-                    .addToBackStack(null).commit()
+                    override fun onDataChange(p0: DataSnapshot) {
+                        if (p0.children.count() > 0) {
+                            p0.children.forEach {
+                                val value = it.value.toString().replace("}", "").split("=")[1]
+                                if (value == FirebaseAuth.getInstance().currentUser!!.uid) {
+                                    friendRef.child(it.key.toString()).setValue(null)
+                                    try {
+                                        removeFromFriends.visibility = View.GONE
+                                    }catch (e: Exception){
+                                        e.printStackTrace()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
             }
 
             showPhones -> {
@@ -303,75 +329,6 @@ class AccountFragment : Fragment(), View.OnClickListener {
                     ltUserPhones.visibility = View.GONE
                 }
             }
-        }
-    }
-
-    private fun startMain() {
-        val prefs =
-            context!!.getSharedPreferences(Constants.PREF, Context.MODE_PRIVATE)!!
-        val ed = prefs.edit()
-        ed?.putBoolean(Constants.IS_LOGGED, false)
-        ed?.apply()
-        setStatus(false)
-        FirebaseAuth.getInstance().signOut()
-
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        activity!!.finishAffinity()
-
-        startActivity(Intent(activity, MainActivity::class.java))
-    }
-
-    private fun removeFromPosts(reference: DatabaseReference, post: Post) {
-        reference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                Timber.d(p0.message)
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                val user = FirebaseAuth.getInstance().currentUser
-                if (p0.children.count() > 0) {
-                    p0.children.forEach {
-                        val value = it.getValue(Post::class.java)
-                        if (value != null && user != null) {
-                            if (value.date.time == post.date.time && value.sender == user.uid) {
-                                reference.child(it.key.toString()).setValue(null)
-                            }
-                        }
-                    }
-                }
-            }
-        })
-
-        val referenceComments = FirebaseDatabase.getInstance().getReference("Comments")
-        referenceComments.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                Timber.d(p0.message)
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                if (p0.children.count() > 0) {
-                    p0.children.forEach {
-                        val value = it.getValue(Comment::class.java)
-                        if (value != null && value.postTime == post.date.time.toString()) {
-                            referenceComments.child(it.key.toString()).setValue(null)
-                        }
-                    }
-                }
-            }
-        })
-    }
-
-    private fun setStatus(isOnline: Boolean) {
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            val reference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
-            val hashMap = HashMap<String, Any>()
-            if (isOnline) {
-                hashMap["onlineStatus"] = "true"
-            } else {
-                hashMap["onlineStatus"] = "false"
-            }
-            reference.updateChildren(hashMap)
         }
     }
 }

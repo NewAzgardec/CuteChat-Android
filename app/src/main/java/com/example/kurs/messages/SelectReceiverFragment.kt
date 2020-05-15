@@ -93,8 +93,11 @@ class SelectReceiverFragment : Fragment(), View.OnClickListener {
                     if (user2 != null && user2.id != user.uid && userFriendsIds.contains(user2.id)) {
                         list.add(user2)
                     }
+                    if (list.isEmpty()) noUsers.visibility = View.VISIBLE
+                    else noUsers.visibility = View.GONE
                 }
                 try {
+
                     rvReceivers.adapter = adapter
                 } catch (e: Exception) {
                     e.printStackTrace()

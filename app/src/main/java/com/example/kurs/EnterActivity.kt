@@ -10,6 +10,8 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.kurs.friends.FriendsFragment
+import com.example.kurs.friends.NewFriendsFragment
+import com.example.kurs.friends.SearchFriendsFragment
 import com.example.kurs.messages.ChatsFragment
 import com.example.kurs.messages.message.Message
 import com.example.kurs.profile.AccountFragment
@@ -32,9 +34,13 @@ import kotlin.collections.HashMap
 
 class EnterActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     val user = FirebaseAuth.getInstance().currentUser!!
+    val current= Configuration()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.enter_activity)
+        supportFragmentManager.beginTransaction().replace(R.id.frameLayout, AccountFragment())
+            .addToBackStack(null).commit()
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.getDefaultNightMode())
 
         val dr = findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -53,17 +59,10 @@ class EnterActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                                 override fun onSuccess() {
                                     val fr =
                                         supportFragmentManager.findFragmentById(R.id.frameLayout)
-                                    if (fr !is SettingsFragment) {
-                                        onNavigationItemSelected(
-                                            arcNavigationView.menu.getItem(
-                                                0
-                                            )
-                                        )
-                                    } else {
+                                    if (fr is SettingsFragment) {
                                         supportFragmentManager.beginTransaction()
                                             .replace(R.id.frameLayout, SettingsFragment())
                                             .addToBackStack(null).commit()
-
                                     }
                                 }
 
@@ -73,13 +72,7 @@ class EnterActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                                 override fun onSuccess() {
                                     val fr =
                                         supportFragmentManager.findFragmentById(R.id.frameLayout)
-                                    if (fr !is SettingsFragment) {
-                                        onNavigationItemSelected(
-                                            arcNavigationView.menu.getItem(
-                                                0
-                                            )
-                                        )
-                                    } else {
+                                    if (fr is SettingsFragment) {
                                         supportFragmentManager.beginTransaction()
                                             .replace(R.id.frameLayout, SettingsFragment())
                                             .addToBackStack(null).commit()
@@ -108,7 +101,11 @@ class EnterActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             override fun onDataChange(p0: DataSnapshot) {
                 val user2 = p0.getValue(User::class.java)
                 if (user2 != null) {
-                    nickname.text = user2.username
+                    try {
+                        nickname.text = user2.username
+                    }catch (e: java.lang.Exception){
+                        e.printStackTrace()
+                    }
                 }
             }
         })
@@ -122,7 +119,6 @@ class EnterActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         messagesCount()
         arcNavigationView.setNavigationItemSelectedListener(this)
         arcNavigationView.bringToFront()
-
     }
 
     private fun changeLanguage(s: String, callback: LocaleCallback) {
@@ -134,9 +130,13 @@ class EnterActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         callback.onSuccess()
     }
 
-//    override fun onConfigurationChanged(newConfig: Configuration) {
-//        super.onConfigurationChanged(newConfig)
-//    }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if(current!=newConfig) {
+            this.setContentView(R.layout.enter_activity)
+            arcNavigationView.setNavigationItemSelectedListener(this)
+        }
+    }
 
     private fun messagesCount() {
         val nav = findViewById<ArcNavigationView>(R.id.arcNavigationView)
@@ -206,6 +206,9 @@ class EnterActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             val fr = supportFragmentManager.findFragmentById(R.id.frameLayout)
             if (fr !is AccountFragment && fr !is FriendsFragment && fr !is ChatsFragment && fr !is WallFragment && fr !is SettingsFragment) {
                 super.onBackPressed()
+            }else if(fr is NewFriendsFragment|| fr is SearchFriendsFragment){
+                supportFragmentManager.beginTransaction().replace(R.id.frameLayout, FriendsFragment())
+                    .addToBackStack(null).commit()
             }
         }
     }

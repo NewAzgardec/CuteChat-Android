@@ -27,6 +27,7 @@ class SearchFriendsAdapter(
     val context: Context,
     val list: ArrayList<User>,
     val friends: Boolean,
+    val userClickListener: (User, Int) -> Unit,
     val clickListener: (User, Int) -> Unit,
     val clickAcceptListener: (User, Int) -> Unit
 ) :
@@ -46,6 +47,8 @@ class SearchFriendsAdapter(
             getLastMessage(item.id, holder.itemView.tvLastMessage)
         }
         checkIfExistsNewFriends(friends, holder, item)
+
+        holder.itemView.setOnClickListener { userClickListener(item, position) }
 
         holder.itemView.btnSendRequest.setOnClickListener { clickListener(item, position) }
 
@@ -93,15 +96,10 @@ class SearchFriendsAdapter(
                         o.add(value)
                     }
                     list.forEach {
-                        if (o != null) {
-                            if (o.contains(it.id)) holder.bindItems(it, context, true)
-                            else holder.bindItems(item, context, false)
-                        }
+                        if (o.contains(it.id)) holder.bindItems(it, context, true)
+                        else holder.bindItems(item, context, false)
 
                     }
-
-                    Timber.d(newFriends.toString())
-
                 }
             })
         }

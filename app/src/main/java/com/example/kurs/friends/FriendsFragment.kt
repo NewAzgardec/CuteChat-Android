@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kurs.R
+import com.example.kurs.friends.account.FriendAccount
 import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -26,6 +27,7 @@ class FriendsFragment : Fragment(), View.OnClickListener {
     val list2 = ArrayList<User>()
     val newList = ArrayList<User>()
     private var adapter: FriendsAdapter? = null
+    val newUsers = ArrayList<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,10 +42,8 @@ class FriendsFragment : Fragment(), View.OnClickListener {
 
         setupRecycler(requireContext())
         val user = FirebaseAuth.getInstance().currentUser!!
-
-
         adapter = FriendsAdapter(context!!, list, true) { us, pos ->
-
+            openFriendProfile(us)
         }
         searchFriend.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -60,13 +60,13 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                 } else {
                     if (cbOnline.isChecked) {
                         adapter = FriendsAdapter(context!!, newList, true) { us, pos ->
-
+                            openFriendProfile(us)
                         }
                         setFriendCount(newList)
                         rvFriends.adapter = adapter
                     } else {
                         adapter = FriendsAdapter(context!!, list, true) { us, pos ->
-
+                            openFriendProfile(us)
                         }
                         setFriendCount(list)
                         rvFriends.adapter = adapter
@@ -88,9 +88,9 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                         newList.add(it)
                     }
                 }
-                deleteVisibility()
+                deleteVisibility(list)
                 adapter = FriendsAdapter(context!!, newList, true) { us, pos ->
-
+                    openFriendProfile(us)
                 }
                 try {
                     setFriendCount(newList)
@@ -100,7 +100,7 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                 }
             } else {
                 adapter = FriendsAdapter(context!!, list, true) { us, pos ->
-
+                    openFriendProfile(us)
                 }
                 try {
                     setFriendCount(list)
@@ -110,6 +110,17 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                 }
             }
         }
+    }
+
+    private fun openFriendProfile(us: User) {
+        val fragment = FriendAccount()
+        val args = Bundle()
+        args.putString("friendId", us.id)
+        args.putBoolean("isExists", true)
+        fragment.arguments = args
+        fragmentManager?.beginTransaction()?.replace(R.id.frameLayout, fragment)
+            ?.addToBackStack(null)
+            ?.commit()
     }
 
     private fun setFriendCount(friends: ArrayList<User>) {
@@ -132,26 +143,26 @@ class FriendsFragment : Fragment(), View.OnClickListener {
         return resources.getString(R.string.friends_5)
     }
 
-    private fun deleteVisibility() {
-        if (list.isEmpty()) {
-            friendsCount.visibility = View.GONE
-            cbOnline.visibility = View.GONE
-            online.visibility = View.GONE
-            online.visibility = View.GONE
-//            searchFriend.isFocusable = false
-            noFriends.visibility = View.VISIBLE
-        } else {
-            friendsCount.visibility = View.VISIBLE
-            cbOnline.visibility = View.VISIBLE
-            online.visibility = View.VISIBLE
-            online.visibility = View.VISIBLE
-//            searchFriend.isFocusable = true
-            noFriends.visibility = View.GONE
+    private fun deleteVisibility(l: ArrayList<User>) {
+        try {
+            if (l.isEmpty()) {
+                friendsCount.visibility = View.GONE
+                cbOnline.visibility = View.GONE
+                online.visibility = View.GONE
+                noFriends.visibility = View.VISIBLE
+            } else {
+                friendsCount.visibility = View.VISIBLE
+                cbOnline.visibility = View.VISIBLE
+                online.visibility = View.VISIBLE
+                noFriends.visibility = View.GONE
+            }
+        }catch (e: java.lang.Exception){
+            e.printStackTrace()
         }
     }
 
     private fun searchFriends(s: String) {
-
+        list2.clear()
         if (cbOnline.isChecked) {
             newList.forEach {
                 if (it.lowerName.startsWith(s)) {
@@ -165,9 +176,9 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                 }
             }
         }
-        deleteVisibility()
+        deleteVisibility(list2)
         adapter = FriendsAdapter(context!!, list2, true) { us, pos ->
-
+            openFriendProfile(us)
         }
         try {
             setFriendCount(list2)
@@ -180,6 +191,34 @@ class FriendsFragment : Fragment(), View.OnClickListener {
     private fun checkFriends(user: FirebaseUser) {
         val reference =
             FirebaseDatabase.getInstance().getReference("Users").child(user.uid).child("friends")
+        val newFriendsReference = FirebaseDatabase.getInstance().getReference("Users").child(user.uid).child("newFriends")
+
+        newFriendsReference.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                Timber.d(p0.message)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                newUsers.clear()
+                p0.children.forEach {
+                    val value = it.value.toString().replace("}", "").split("=")[1]
+                    newUsers.add(value)
+                }
+                try{
+                    if(newUsers.isEmpty()){
+                        redBtn.visibility = View.GONE
+                        reqCount.visibility = View.GONE
+                    }else{
+                        reqCount.text = newUsers.size.toString()
+                        redBtn.visibility = View.VISIBLE
+                        reqCount.visibility = View.VISIBLE
+                    }
+                }catch (e: java.lang.Exception){
+                    e.printStackTrace()
+                }
+            }
+        })
+
 
         reference.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -206,7 +245,7 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                                 list.add(friend)
                             }
 
-                            deleteVisibility()
+                            deleteVisibility(list)
 
                             try {
                                 setFriendCount(list)
@@ -248,11 +287,20 @@ class FriendsFragment : Fragment(), View.OnClickListener {
                 )
             if (user2 == user) {
                 list.remove(it)
-                deleteVisibility()
+                deleteVisibility(list)
                 return true
             }
         }
         return false
+    }
+
+    override fun onResume() {
+        list.clear()
+        list2.clear()
+        newList.clear()
+        val user = FirebaseAuth.getInstance().currentUser!!
+        checkFriends(user)
+        super.onResume()
     }
 
     private fun setupRecycler(context: Context) {

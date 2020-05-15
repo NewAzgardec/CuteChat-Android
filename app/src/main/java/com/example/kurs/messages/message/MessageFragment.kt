@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.kurs.R
 import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
@@ -71,6 +72,19 @@ class MessageFragment : Fragment(), View.OnClickListener {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
+                val u = p0.getValue(User::class.java)
+                if (u != null) {
+                    try {
+                        name.text = u.username
+                        if (u.imageUri != "") {
+                            Glide.with(context!!).load(u.imageUri).into(ivAva)
+                        } else {
+                            Glide.with(context!!).load(R.drawable.ava).into(ivAva)
+                        }
+                    }catch (e: Exception){
+                        e.printStackTrace()
+                    }
+                }
                 readMessages(FirebaseAuth.getInstance().currentUser!!.uid, receiver)
             }
 
@@ -130,6 +144,7 @@ class MessageFragment : Fragment(), View.OnClickListener {
                     }
                 }
                 try {
+                    rvMessages.scrollToPosition(adapter!!.itemCount-1)
                     rvMessages.adapter = adapter
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -143,33 +158,22 @@ class MessageFragment : Fragment(), View.OnClickListener {
     override fun onClick(v: View?) {
         when (v) {
             btnSend -> {
-                val reference = FirebaseDatabase.getInstance().getReference("Messages")
-                val hashMap = HashMap<String, Any>()
-                hashMap["senderId"] = userId
-                hashMap["senderName"] = userName
-                hashMap["receiverId"] = receiver
-                hashMap["seen"] = false
-                hashMap["text"] = etMessage.text.trim().toString()
-                hashMap["date"] = Date().toString()
+                if(etMessage.text.trim().toString().isNotEmpty()) {
+                    val reference = FirebaseDatabase.getInstance().getReference("Messages")
+                    val hashMap = HashMap<String, Any>()
+                    hashMap["senderId"] = userId
+                    hashMap["senderName"] = userName
+                    hashMap["receiverId"] = receiver
+                    hashMap["seen"] = false
+                    hashMap["text"] = etMessage.text.trim().toString()
+                    hashMap["date"] = Date().toString()
 
-                reference.push().setValue(hashMap)
-                etMessage.clearFocus()
-                etMessage.setText("")
+                    reference.push().setValue(hashMap)
+                    etMessage.clearFocus()
+                    etMessage.setText("")
+                    rvMessages.scrollToPosition(adapter!!.itemCount-1)
+                }
             }
         }
     }
-//
-//    override fun onPause() {
-//        super.onPause()
-//        val ed = prefs.edit()
-//        ed?.putString(Constants.ID, "")
-//        ed?.apply()
-//    }
-//
-//    override fun onResume() {
-//        super.onResume()
-//        val ed = prefs.edit()
-//        ed?.putString(Constants.ID, userId)
-//        ed?.apply()
-//    }
 }

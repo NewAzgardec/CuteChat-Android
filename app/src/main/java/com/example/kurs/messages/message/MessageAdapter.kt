@@ -8,6 +8,8 @@ import com.example.kurs.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.android.synthetic.main.item_message_right.view.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MessageAdapter(val list:ArrayList<Message>, val clickListener: (Message, Int) -> Unit) :
     RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
@@ -48,7 +50,7 @@ class MessageAdapter(val list:ArrayList<Message>, val clickListener: (Message, I
         fun bindItems(message: Message) {
             itemView.tvSender.text = message.senderName
             itemView.tvMessage.text = message.text
-            itemView.tvDate.text = message.date
+            itemView.tvDate.text = SimpleDateFormat("d MMMM HH:mm", Locale.ENGLISH).format(SimpleDateFormat("E MMM MM HH:mm:ss z yyyy", Locale.ENGLISH).parse(message.date))
         }
     }
 

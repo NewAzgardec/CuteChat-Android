@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Kurs</string>
+    <string name="app_name">CuteChat</string>
     <string name="ready">готово</string>
     <string name="verification">На вашу почту отправлено письмо для подтверждения</string>
     <string name="q_exit">Вы уверены, что хотите выйти?</string>
@@ -46,4 +46,5 @@
     <string name="messages">Сообщения</string>
     <string name="wall">Стена</string>
     <string name="settings">Настройки</string>
+    <string name="user_no_posts">У данного пользователя еще нет записей.</string>
 </resources>

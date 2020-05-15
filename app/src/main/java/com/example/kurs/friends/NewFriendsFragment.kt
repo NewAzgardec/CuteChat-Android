@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kurs.R
+import com.example.kurs.friends.account.FriendAccount
 import com.example.kurs.profile.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -40,6 +41,7 @@ class NewFriendsFragment : Fragment() {
         val referenceCurrent = FirebaseDatabase.getInstance().getReference("Users")
         val newFriendsReference = referenceCurrent.child(user.uid).child("newFriends")
         newUsersAdapter = NewFriendsAdapter(context!!, newUsers, { us, pos ->
+            openFriendProfile(us)
         },
             { user1, i ->
                 removeFromNewList(newFriendsReference, user1)
@@ -79,26 +81,50 @@ class NewFriendsFragment : Fragment() {
                             if (newFriend != null) {
                                 newUsers.add(newFriend)
                             }
-                            rvSearchedFriends.adapter = newUsersAdapter
+                            deleteVisibility(newUsers)
+                            try {
+                                rvSearchedFriends.adapter = newUsersAdapter
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
                     })
                 }
-                if(newUsers.isEmpty()){
-                    noUsers.visibility = View.VISIBLE
-                    searchNewFriend.visibility = View.GONE
-                }else{
-                    noUsers.visibility = View.GONE
-                    searchNewFriend.visibility = View.VISIBLE
-                }
+                if(p0.children.count()==0) deleteVisibility(newUsers)
             }
         })
 
-        btnSearchBack.setOnClickListener { fragmentManager?.popBackStack() }
+        btnSearchBack.setOnClickListener { activity!!.onBackPressed() }
+    }
+
+    private fun deleteVisibility(newUsers: ArrayList<User>) {
+        try {
+            if (newUsers.isEmpty()) {
+                noUsers.visibility = View.VISIBLE
+                searchNewFriend.visibility = View.GONE
+            } else {
+                noUsers.visibility = View.GONE
+                searchNewFriend.visibility = View.VISIBLE
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun openFriendProfile(us: User) {
+        val fragment = FriendAccount()
+        val args = Bundle()
+        args.putString("friendId", us.id)
+        args.putBoolean("isExists", false)
+        fragment.arguments = args
+        fragmentManager?.beginTransaction()?.add(R.id.frameLayout, fragment)
+            ?.addToBackStack(null)
+            ?.commit()
     }
 
 
     private fun removeFromNewList(newFriendsReference: DatabaseReference, user1: User) {
-        newFriendsReference.addValueEventListener(object : ValueEventListener {
+        newFriendsReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Timber.d(p0.message)
             }
